@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<!-- 공통 헤드-->
+<!--<th:block th:replace="/fragments/baseHead :: baseHead"></th:block>-->
+<!--~{template/layout/base :: common_header(~{::title},~{::link})}-->
+
+<body>    <!-- 사이드바-->
+    <th:block th:replace="/fragments/aside :: aside"></th:block>
+<!--    <div th:replace="~{fragments/aside :: aside}"></div>-->
+
+<div id="colorlib-page">
+    <div id="colorlib-main">
+
+            <!-- 상단바-->
+<!--            <th:block th:replace="/layout/fragments/top :: topbarFragment"></th:block>-->
+
+            <!-- 본문-->
+            <th:block layout:fragment="content"></th:block>
+
+
+        <!-- 공통 하단-->
+<!--        <th:block th:replace="/layout/fragments/footer :: footerFragment"></th:block>-->
+    </div>
+</div>
+
+<!-- 공통 스크립트-->
+<!--<th:block th:replace="fragments/baseJscript :: baseJscript"></th:block>-->
+<div id="ftco-loader" class="show fullscreen">
+    <svg class="circular" width="48px" height="48px">
+        <circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/>
+        <circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10"
+                stroke="#F96D00"/>
+    </svg>
+</div>
+
+<link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,700" rel="stylesheet">
+
+<link rel="stylesheet" th:href="@{/css/open-iconic-bootstrap.min.css}">
+<link rel="stylesheet" th:href="@{/css/animate.css}">
+
+<link rel="stylesheet" th:href="@{/css/owl.carousel.min.css}">
+<link rel="stylesheet" th:href="@{/css/owl.theme.default.min.css}">
+<link rel="stylesheet" th:href="@{/css/magnific-popup.css}">
+
+<link rel="stylesheet" th:href="@{/css/aos.css}">
+
+<link rel="stylesheet" th:href="@{/css/ionicons.min.css}">
+
+<link rel="stylesheet" th:href="@{/css/bootstrap-datepicker.css}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.14.0/jquery.timepicker.min.css" rel="stylesheet">
+
+<link rel="stylesheet" th:href="@{/css/flaticon.css}">
+<link rel="stylesheet" th:href="@{/css/icomoon.css}">
+<link rel="stylesheet" th:href="@{/css/style.css}">
+</body>
+</html>

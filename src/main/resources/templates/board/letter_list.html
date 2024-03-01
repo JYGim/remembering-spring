@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="theme-color" content="#478ac9">
+    <meta property="og:title" content="photo_list">
+    <meta property="og:type" content="website">
+    <meta data-intl-tel-input-cdn-path="intlTelInput/">
+
+    <title>
+        가족 공간 Dmremember
+    </title>
+
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,700" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/open-iconic-bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/animate.css}">
+
+    <link rel="stylesheet" th:href="@{/css/owl.carousel.min.css}">
+    <link rel="stylesheet" th:href="@{/css/owl.theme.default.min.css}">
+    <link rel="stylesheet" th:href="@{/css/magnific-popup.css}">
+
+    <link rel="stylesheet" th:href="@{/css/aos.css}">
+
+    <link rel="stylesheet" th:href="@{/css/ionicons.min.css}">
+
+    <link rel="stylesheet" th:href="@{/css/bootstrap-datepicker.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.14.0/jquery.timepicker.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/flaticon.css}">
+    <link rel="stylesheet" th:href="@{/css/icomoon.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+</head>
+
+<body>
+<div th:replace="~{fragments/aside :: aside}"></div>
+
+<div id="colorlib-page">
+    <div id="colorlib-main">
+
+        <div class="hero-wrap js-fullheight" th:style="'background-image:url(' + '/images/297.jpg' + ');'"
+             data-stellar-background-ratio="0.5">
+            <div class="overlay"></div>
+            <div class="js-fullheight d-flex justify-content-center align-items-center">
+                <div class="col-md-8 text text-center">
+                    <div class="desc">
+                        <h1 class="mb-4">가족 공간</h1>
+                        <h3 class="mb-4">아빠, 형, 아들에게 소식을 전하는
+                            공간</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="ftco-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="row" th:if="${letters.size()} <= 0 or ${letters} == null">
+                            <h5>아직 게시물이 없어요!!!</h5>
+                        </div>
+                        <th:block th:if="${letters.size()} >= 0">
+                            <th:block th:each="letter : ${letters}">
+                                <!--                    {% if object.image %}-->
+                                <p th:if="${letter.photo} != null">
+                                    <img th:src="${'/' + letter.photo}" alt="" class="img-fluid">
+                                </p>
+                                <!--                    {% endif %}-->
+                                <div class="text pt-2 mt-3">
+                                    <span class="category mb-1 d-block"><a href="#">    </a></span>
+                                    <h5 th:text="${letter.contents}" class="mb-4" style="color: #696969;"></h5>
+                                    <div class="author mb-4 d-flex align-items-center">
+                                        <div class="ml-3 info">
+                                            <span>Written by</span>
+<!--                                            <h3 th:text="${letter.user}">,-->
+                                            <h3>
+                                                <!--                                    {% if letter.modified_at != letter.posted_at %}-->
+                                                <span th:if="${letter.modified_at != letter.posted_at}" th:text="${letter.modified_at}"></span>
+                                                <!--                                    {% else %}-->
+                                                <span th:unless="${letter.modified_at != letter.posted_at}" th:text="${letter.posted_at}"></span>
+                                                <!--                                    {% endif %}-->
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    <div class="meta-wrap d-md-flex align-items-center">
+                                        <div class="half order-md-last text-md-right ml-2">
+                                            <p class="meta">
+<!--                                                <span><i class="icon-heart"></i></span>-->
+<!--                                                <span><i class="icon-eye"></i></span>-->
+<!--                                                <span><i class="icon-comment"></i></span>-->
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p><a th:href="@{/board/letter/delete/{id}(id=${letter.id})}"
+                                                  class="btn btn-primary p-3 px-xl-4 py-xl-3">삭제하기</a></p>
+                                        </div>
+                                        <div class="ml-2">
+                                            <p><a th:href="@{/board/letter/update/{id}(id=${letter.id})}"
+                                                  class="btn btn-primary p-3 px-xl-4 py-xl-3">
+                                                수정하기</a></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th:block>
+                        </th:block>
+                            <!--                    {% endfor %}-->
+
+                            <!--                    <div class="row mt-5">-->
+                            <!--                        <div class="col">-->
+                            <!--                            <div class="block-27">-->
+                            <!--                                {% if page_obj.has_other_pages %}-->
+                            <!--                                <ul>-->
+                            <!--                                    {% if page_obj.has_previous %}-->
+                            <!--                                    <li><a href="?page=1&q={{ request.GET.q }}">&laquo</a></li>-->
+                            <!--                                    {% endif %}-->
+                            <!--                                    {% if page_obj.has_previous %}-->
+                            <!--                                    <li><a href="?page={{ page_obj.previous_page_number }}">&lt;</a></li>-->
+                            <!--                                    {% endif %}-->
+
+                            <!--                                    {% for index in pagelist %}-->
+                            <!--                                    {% if index == page_obj.number %}-->
+                            <!--                                    <li class="active"><span>{{ index }}</span></li>-->
+                            <!--                                    {% else %}-->
+                            <!--                                    <li><a href="?page={{ index }}"><span>{{ index }}</span></a></li>-->
+                            <!--                                    {% endif %}-->
+
+                            <!--                                    {% endfor %}-->
+
+                            <!--                                    {% if page_obj.has_next %}-->
+                            <!--                                    <li><a href="?page={{ page_obj.next_page_number }}">&gt;</a></li>-->
+                            <!--                                    <li>-->
+                            <!--                                        <a href="?page={{ page_obj.paginator.num_pages }}&q={{ request.GET.q }}">&raquo;</a>-->
+                            <!--                                    </li>-->
+                            <!--                                    {% endif %}-->
+                            <!--                                </ul>-->
+                            <!--                                {% endif %}-->
+                            <!--                            </div>-->
+                            <!--                        </div>-->
+                            <!--                    </div>-->
+                    </div><!-- END-->
+
+                    <!-- 우측 사이드바 -->
+                    <div class="col-lg-4 sidebar ftco-animate">
+
+                        <div class="sidebar-box">
+                            <form th:action="@{/board/post_list}" method="GET" class="search-form">
+                                <div class="form-group">
+                                    <span class="icon icon-search"></span>
+                                    <input type="text" class="form-control" placeholder="Type a keyword and hit enter"  name="q" />
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- 작성 버튼 1 -->
+                        <div class="sidebar-box">
+                            <div class="meta-wrap d-md-flex align-items-center">
+                                <div>
+                                    <p><a th:href="@{/board/letter/write}" class="btn btn-primary p-3 px-xl-4 py-xl-3">작성</a></p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 작성 버튼 끝 -->
+
+                        <div class="sidebar-box ftco-animate">
+                            <h3 class="sidebar-heading">Categories</h3>
+                            <ul class="categories">
+                                <li><a href="#">Photography <span>(129)</span></a></li>
+                                <li><a href="#">동영상 <span>(1)</span></a></li>
+                                <li><a href="#">게시판 <span>(2)</span></a></li>
+                                <li><a href="#">가족공간 <span>(2)</span></a></li>
+                            </ul>
+                        </div>
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="sidebar-box ftco-animate">
+                            <h3 class="sidebar-heading">Archives</h3>
+                            <ul class="categories">
+                                <li><a href="#">October 2018 <span>(10)</span></a></li>
+                                <li><a href="#">September 2018 <span>(6)</span></a></li>
+                                <li><a href="#">August 2018 <span>(8)</span></a></li>
+                                <li><a href="#">July 2018 <span>(2)</span></a></li>
+                                <li><a href="#">June 2018 <span>(7)</span></a></li>
+                                <li><a href="#">May 2018 <span>(5)</span></a></li>
+                            </ul>
+                        </div>
+
+
+
+                    </div><!-- 우측 사이드바 END COL -->
+
+                        <!-- loader -->
+                        <div id="ftco-loader" class="show fullscreen">
+                            <svg class="circular" width="48px" height="48px">
+                                <circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/>
+                                <circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10"
+                                        stroke="#F96D00"/>
+                            </svg>
+                        </div>
+
+                        <script th:src="@{/js/jquery.min.js}"></script>
+                        <script th:src="@{/js/jquery-migrate-3.0.1.min.js}"></script>
+                        <script th:src="@{/js/popper.min.js}"></script>
+                        <script th:src="@{/js/bootstrap.min.js}"></script>
+                        <script th:src="@{/js/jquery.easing.1.3.js}"></script>
+                        <script th:src="@{/js/jquery.waypoints.min.js}"></script>
+                        <script th:src="@{/js/jquery.stellar.min.js}"></script>
+                        <script th:src="@{/js/owl.carousel.min.js}"></script>
+                        <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+                        <script th:src="@{/js/aos.js}"></script>
+                        <script th:src="@{/js/jquery.animateNumber.min.js}"></script>
+                        <script th:src="@{/js/bootstrap-datepicker.js}"></script>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.14.0/jquery.timepicker.min.js"></script>
+                        <script th:src="@{/js/scrollax.min.js}"></script>
+                        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVWaKrjvy3MaE7SQ74_uJiULgl1JY0H2s&sensor=false"></script>
+                        <script th:src="@{/js/google-map.js}"></script>
+                        <script th:src="@{/js/main.js}"></script>
+
+
+</body>
+
+</html>
