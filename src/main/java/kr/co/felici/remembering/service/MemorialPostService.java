@@ -2,145 +2,364 @@ package kr.co.felici.remembering.service;
 
 
 
+import jakarta.persistence.EntityManager;
+import kr.co.felici.remembering.domain.BoardImage;
+import kr.co.felici.remembering.domain.Letter;
 import kr.co.felici.remembering.domain.MemorialPost;
-import kr.co.felici.remembering.dto.MemorialPostDto;
+import kr.co.felici.remembering.domain.BoardVideo;
+import kr.co.felici.remembering.dto.*;
+import kr.co.felici.remembering.repository.BoardVideoRepository;
+import kr.co.felici.remembering.repository.BoardImageRepository;
 import kr.co.felici.remembering.repository.MemorialPostRepository;
-import kr.co.felici.remembering.repository.PhotoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.util.List;
-import java.util.UUID;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * author: felici
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class MemorialPostService {
-
-    private static final String CURR_PHOTO_PEPO_PATH = "//src/main//resources//static//post//files//photos";
-    private static final String CURR_VIDEO_PEPO_PATH = "//src/main//resources//static//post//files//videos";
+//    private static final String CURR_PHOTO_PEPO_PATH = "//src/main//resources//static//post//files//photos";
+//    private static final String CURR_VIDEO_PEPO_PATH = "//src/main//resources//static//post//files//videos";
 
     private final MemorialPostRepository memorialPostRepository;
-    private final PhotoRepository photoRepository;
+    private final BoardImageRepository imageRepository;
+    private final BoardVideoRepository boardVideoRepository;
+    private final EntityManager em;
+
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    private String originalFileName = "";
+    String upLoadFileName = "";
+    File uploadFile = null;
+    String absolutePath = new File("").getAbsolutePath() + File.separator;
+    String uploadRootPath = absolutePath + "media/memorialPosts";
+    String basePath = "";
+    String pathForImages = uploadRootPath + File.separator + "images";
+    String pathForImagesDir = uploadRootPath + File.separator + "images";
+
+    Path uploadImagePath = Path.of(pathForImagesDir);
+
+    String pathForVideos = uploadRootPath + File.separator + "posts-videos";
+    String dbSavebasePath = "";
+    String dbSaveImagePath = "images";
+    String dbSaveVideoPath = "videos";
+    String pathArg = null;
+    String mPhotoFile = "photoMFile";
+    String mVideoFile = "videoMFile";
+
+    Boolean isSuccess = false;
+
+
+
+    public Boolean checkAuth(Long id) {
+        Optional<MemorialPost> optionalThePost = memorialPostRepository.findById(id);
+        MemorialPost thePost = optionalThePost.get();
+
+
+
+        if(thePost.getPw() == "") {
+
+        } else {
+
+        }
+        return false;
+    }
 
     public MemorialPost findById(Long id) {
         return memorialPostRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
     }
+    public Page<MemorialPost> getAll(int page) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        sorts.add(Sort.Order.asc("modifiedAt"));
+        PageRequest pageable = PageRequest.of(page, 2, Sort.by(sorts));
+        Page<MemorialPost> posts = memorialPostRepository.findAll(pageable);
 
-    public List<MemorialPost> getAllPost() {
-        return memorialPostRepository.findAll();
+        return posts;
     }
-
-    public void addPost(MemorialPostDto memorialPostDto)
+    @Transactional
+    public void addPost(AddMemorialPostDto addMemorialPostDto)
             throws Exception {
+        List<BoardImage> imageFileList = new ArrayList<>();
+        List<BoardVideo> videoFileList = new ArrayList<>();
 
-        MultipartFile photoMFile = memorialPostDto.getPhoto();
-        MultipartFile videoMFile = memorialPostDto.getVideo();
+        MemorialPost memorialPost = MemorialPost.builder()
+                .writer(addMemorialPostDto.getWriter())
+                .contents(addMemorialPostDto.getContents())
+                .pw(bCryptPasswordEncoder.encode(addMemorialPostDto.getPw()))
+                .build();
 
-        String originalPhotoFileName = photoMFile.getOriginalFilename();
-        String originalVideoFileName = videoMFile.getOriginalFilename();
+        log.info("memorialPost: ", memorialPost);
 
-        String upLoadPhotoFileName = "";
+//        List<MultipartFile> photoMultipartFileList = addMemorialPostDto.getPhoto();
+//        List<MultipartFile> videoMultipartFileList = addMemorialPostDto.getVideo();
 
-        if(photoMFile.getSize() > 0) {
-            upLoadPhotoFileName = createServerFileName(originalPhotoFileName);
-//            upLoadPhotoFileName = createServerFileName(originalPhotoFileName);
+        addmediaFile(memorialPost, addMemorialPostDto, mPhotoFile, imageFileList, videoFileList);
+        addmediaFile(memorialPost, addMemorialPostDto, mVideoFile, imageFileList, videoFileList);
+
+        if(!imageFileList.isEmpty()) {
+            for(BoardImage image: imageFileList) {
+                imageRepository.save(image);
+            }
+        }
+
+        if(!videoFileList.isEmpty()) {
+            for(BoardVideo video: videoFileList) {
+                boardVideoRepository.save(video);
+            }
         } else {
-//            return;
+            log.info("No video file");
         }
 
-//        String upLoadPhotoFileName = createServerFileName(originalPhotoFileName);
-        String upLoadVideoFileName = createServerFileName(originalVideoFileName);
-
-
-
-//        String uploadPath = "resources//static//";
-//        String uploadPath = "resources//static//post//files//photos";
-//        String uploadPath = "//src//main//resources//static//post//files//photos";
-        String uploadPath = "/home/felici/studyPj/spring-boot-study/blog-api-namsan22/src/main/resources/static/post/files/";
-//        String uploadPath = "\\src\\main\\resources\\static\\post\\files\\photos";
-//        String uploadPath = "/static/post/files/photos";
-        // 2. 원본 파일 이름 알아오기
-        String dpSavePath = "post/files";
-
-        // 3. 파일 이름 중복되지 않게 이름 변경(서버에 저장할 이름) UUID 사용
-        UUID uuid = UUID.randomUUID();
-        // 4. 파일 생성
-        File file1 = new File(uploadPath + File.separator + upLoadPhotoFileName);
-//        File file1 = new File(uploadPath);
-//        File file1 = new File(uploadPath);
-        // 5. 서버로 전송
-        if(!file1.exists()) {
-            file1.mkdirs();
-        }
-//        if (!file1.getParentFile().exists()) {
-//            file1.getParentFile().mkdirs();
-//        }
-
-//        if (!file1.exists() && !file1.createNewFile()) {
-//            logger.error("Failed to create file");
-//        }
-
-
-        photoMFile.transferTo(new File(uploadPath + File.separator + upLoadPhotoFileName));
-
-
-
-//        File pFile = new File(CURR_PHOTO_PEPO_PATH + "//" + upLoadPhotoFileName);
-//        if(pFile.exists()) {
-//            photoMFile.transferTo(pFile);
-//        } else {
-//            if(pFile.getParentFile().mkdirs()) {						//디렉토리를 만든 후 파일을 생성함
-//                pFile.createNewFile();
-//            }
-//
-//            photoMFile.transferTo(pFile);
-//        }
-
-
-
-
-//        photoMFile.transferTo(new File(CURR_PHOTO_PEPO_PATH +"//"+ upLoadPhotoFileName));
-
-
-
-
-
-//        photoMFile.transferTo(new File(getFullPath(upLoadPhotoFileName, CURR_PHOTO_PEPO_PATH)));
-//        photoMFile.transferTo(new File(getFullPath(upLoadPhotoFileName, CURR_PHOTO_PEPO_PATH)));
-//        mFile.transferTo(new File(CURR_IMAGE_PEPO_PATH +"\\"+ originalFilename));
-
-//        UUID uuid = UUID.randomUUID();
-//
-//        String fileName = projectPath + "/" + uuid.toString();
-//
-//        File saveFile = new File(fileName);
-//        photoMFile.transferTo(projectPath);
-
-
-        memorialPostRepository.save(MemorialPost.builder()
-                .writer(memorialPostDto.getWriter())
-                .contents(memorialPostDto.getContents())
-                .photo(dpSavePath + File.separator + upLoadPhotoFileName)
-                .video(upLoadVideoFileName)
-                .pw(memorialPostDto.getPw())
-                .build());
-
-
-//        memorialPostDto.setPhoto("/files/" + fileName);
-
-
-//        memorialPostRepository.save(memorialPostDto);
+        memorialPostRepository.save(memorialPost);
 
 
     }
+
+    public String deleteMemorialPost(Map<String, String> params) {
+
+        log.info("params: " + params);
+        String id = params.get("id");
+        String pwd = params.get("pwd");
+
+        MemorialPost thePost = this.findById(Long.valueOf(id));
+        String password = thePost.getPw();
+
+        log.info("password: " + password);
+        log.info("pwd: " + bCryptPasswordEncoder.encode(pwd));
+
+        if(bCryptPasswordEncoder.matches(pwd, password)) {
+
+            List<BoardImage> images = thePost.getImages();
+            List<BoardVideo> videos = thePost.getVideos();
+
+            if (!images.isEmpty()) {
+                for (BoardImage image : images) {
+                    try {
+                        File file = new File(pathForImages + File.separator + image.getPath());
+                        log.info(file.getAbsolutePath());
+                        if (file.exists()) {
+                            boolean result = file.delete();
+                            if (result) {
+                                log.info("파일 삭제 성공");
+                            } else {
+                                log.info("파일 삭제 실패");
+                            }
+                        } else {
+                            log.info("파일이 없어요!");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
+            }
+            if (!videos.isEmpty()) {
+                for (BoardVideo video : videos) {
+                    try {
+                        File file = new File(pathForVideos + File.separator + video.getPath());
+                        log.info(file.getAbsolutePath());
+                        if (file.exists()) {
+                            boolean result = file.delete();
+                            if (result) {
+                                log.info("파일 삭제 성공");
+                            } else {
+                                log.info("파일 삭제 실패");
+                            }
+                        } else {
+                            log.info("파일이 없어요!");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
+            }
+            memorialPostRepository.deleteById(Long.valueOf(id));
+
+            log.info("삭제 성공!!!" + id);
+            return id;
+        } else {
+            log.info("비번 안맞음???" + id);
+            return "-1";
+        }
+
+    }
+
+    @Transactional
+    public MemorialPost updateMemorialPost(UpdateMemorialPostDto updateMemorialPostDto) throws IOException {
+
+        String password = updateMemorialPostDto.getPw();
+        log.info("password: " + password);
+        log.info("isSuccess: " + isSuccess);
+
+        MemorialPost memorialPost = em.find(MemorialPost.class, updateMemorialPostDto.getId());
+
+        if(bCryptPasswordEncoder.matches(password, memorialPost.getPw())) {
+
+            List<BoardImage> imageFileList = new ArrayList<>();
+            List<BoardVideo> videoFileList = new ArrayList<>();
+
+            memorialPost.addContents(updateMemorialPostDto.getContents());
+
+            updateMediaFile(memorialPost, updateMemorialPostDto, mPhotoFile, imageFileList, videoFileList);
+            updateMediaFile(memorialPost, updateMemorialPostDto, mVideoFile, imageFileList, videoFileList);
+
+            isSuccess = true;
+
+        } else {
+            log.info("비번이 맞지 않아 수정되지 않았습니다. !!!");
+            isSuccess = false;
+        }
+
+        return memorialPost;
+    }
+
+    public Boolean succeed() {
+        return isSuccess;
+    }
+
+    private void addmediaFile(MemorialPost memorialPost, AddMemorialPostDto addMemorialPostDto,
+                              String typeOfFile, List<BoardImage> imageFileList,
+                              List<BoardVideo> videoFileList) throws IOException {
+        List<MultipartFile> multipartFiles = null;
+
+        switch (typeOfFile) {
+            case "photoMFile":
+                multipartFiles = addMemorialPostDto.getPhoto();
+                basePath = pathForImages;
+                dbSavebasePath = dbSaveImagePath;
+                break;
+            case "videoMFile":
+                multipartFiles = addMemorialPostDto.getVideo();
+                basePath = pathForVideos;
+                dbSavebasePath = dbSaveVideoPath;
+                break;
+        }
+        if (multipartFiles != null) {
+            for (MultipartFile multipartFile : multipartFiles) {
+                if (multipartFile.getSize() >= 1) {
+                    originalFileName = multipartFile.getOriginalFilename();
+
+                    upLoadFileName = createServerFileName(originalFileName);
+
+                    uploadFile = new File(basePath + File.separator + upLoadFileName);
+
+                    Path filePath = uploadImagePath.resolve(upLoadFileName);
+
+                    if(!Files.exists(uploadImagePath)) {
+                        Files.createDirectories(uploadImagePath);
+                    }
+
+//                    Files.copy(image)
+
+                    if (!uploadFile.exists()) {
+                        uploadFile.mkdirs();
+                    }
+                    multipartFile.transferTo(uploadFile);
+
+//                    pathArg = dbSavebasePath + File.separator + upLoadFileName;
+                    pathArg = upLoadFileName;
+
+
+                    if (typeOfFile.equals("photoMFile")) {
+                        BoardImage image = BoardImage.builder()
+                                .path(pathArg)
+                                .originalFilename(originalFileName)
+                                .fileSize(multipartFile.getSize())
+                                .build();
+                        imageFileList.add(image);
+                        memorialPost.addImage(image);
+                    } else if (typeOfFile.equals("videoMFile")) {
+                        BoardVideo video = BoardVideo.builder()
+                                .path(pathArg)
+                                .originalFilename(originalFileName)
+                                .fileSize(multipartFile.getSize())
+                                .build();
+                        videoFileList.add(video);
+                        memorialPost.addVideo(video);
+                    }
+                }
+            }
+        }
+    }
+
+    private void updateMediaFile(MemorialPost memorialPost, UpdateMemorialPostDto updateMemorialPostDto,
+                                 String typeOfFile, List<BoardImage> imageFileList,
+                                 List<BoardVideo> videoFileList) throws IOException {
+        List<MultipartFile> multipartFiles = null;
+
+        switch (typeOfFile) {
+            case "photoMFile":
+                multipartFiles = updateMemorialPostDto.getPhoto();
+                basePath = pathForImages;
+                dbSavebasePath = dbSaveImagePath;
+                break;
+            case "videoMFile":
+                multipartFiles = updateMemorialPostDto.getVideo();
+                basePath = pathForVideos;
+                dbSavebasePath = dbSaveVideoPath;
+                break;
+        }
+        if (multipartFiles != null) {
+            for (MultipartFile multipartFile : multipartFiles) {
+                if (multipartFile.getSize() >= 1) {
+                    originalFileName = multipartFile.getOriginalFilename();
+
+                    upLoadFileName = createServerFileName(originalFileName);
+
+
+                    uploadFile = new File(basePath + File.separator + upLoadFileName);
+                    if (!uploadFile.exists()) {
+                        uploadFile.mkdirs();
+                    }
+                    multipartFile.transferTo(uploadFile);
+
+//                    pathArg = dbSavebasePath + File.separator + upLoadFileName;
+                    pathArg = upLoadFileName;
+
+                    if (typeOfFile.equals("photoMFile")) {
+                        BoardImage image = BoardImage.builder()
+                                .path(pathArg)
+                                .originalFilename(originalFileName)
+                                .fileSize(multipartFile.getSize())
+                                .build();
+                        imageFileList.add(image);
+                        memorialPost.addImage(image);
+                        em.persist(image);
+                    } else if (typeOfFile.equals("videoMFile")) {
+                        BoardVideo video = BoardVideo.builder()
+                                .path(pathArg)
+                                .originalFilename(originalFileName)
+                                .fileSize(multipartFile.getSize())
+                                .build();
+                        videoFileList.add(video);
+                        memorialPost.addVideo(video);
+                        em.persist(video);
+                    }
+                }
+            }
+        }
+    }
+
 
 
     public String getFullPath(String filename, String fileDir) {
@@ -162,5 +381,11 @@ public class MemorialPostService {
         return originalFilename.substring(pos + 1);
     }
 
+    public String generateFileUrl(String baseUrl, String fileName) {
+        return String.format(URL_FORMAT, baseUrl, fileName);
+    }
+
+
+    private static final String URL_FORMAT = "%s/%s";
 
 }

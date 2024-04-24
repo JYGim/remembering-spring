@@ -33,7 +33,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.14.0/jquery.timepicker.min.css" rel="stylesheet">
 
     <link rel="stylesheet" th:href="@{/css/flaticon.css}">
-    <link rel="stylesheet" th:href="@{/css/icomoon.css}">
+<!--    <link rel="stylesheet" th:href="@{/css/icomoon.css}">-->
     <link rel="stylesheet" th:href="@{/css/style.css}">
 
 </head>
@@ -41,7 +41,7 @@
 <body>
 <div th:replace="~{fragments/aside :: aside}"></div>
 
-<div id="colorlib-main">
+<div id="home-main">
 
     <section class="ftco-section">
         <div class="container">
@@ -50,7 +50,6 @@
                         <div class="col-md-12">
                             <div class="blog-entry ftco-animate">
                                 <div class="text pt-2 mt-3">
-
                                     <th:block th:if="${post.photo}">
                                         <img th:if="${post.photo}" th:src="${'/' + post.photo}" alt="" class="img-fluid">
                                         <img src="${post.photo}" alt="" class="img-fluid">

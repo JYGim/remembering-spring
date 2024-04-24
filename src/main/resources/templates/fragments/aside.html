@@ -1,41 +1,34 @@
-    <aside th:fragment="aside" id="colorlib-aside" role="complementary" class="js-fullheight text-center">
-        <h1 id="colorlib-logo"><a th:href="@{/}">Remembering</a></h1>
-        <nav id="colorlib-main-menu" role="navigation">
-            <ul>
-                <li class="colorlib-active"><a th:href="@{/}">Home</a></li>
-                <li><a th:href="@{/album/photos}">Photography</a></li>
-                <li><a th:href="@{/album/video}">동영상</a></li>
-                <li><a th:href="@{/board/posts}">게시판</a></li>
-                <th:block th:if="${servletPath} == '/board/posts'">
-                    <ol>
-                        <li style><a th:href="@{/board/post/write}">작성하기</a></li>
-                    </ol>
-                </th:block>
-                <li><a th:href="@{/board/letters}">가족 공간</a></li>
-                <!--                {% comment %} 사용자가 로그인 되어 있으면, 로그아웃 버튼을 화면에 표시 {% endcomment %}-->
-                <!--                {% if user.is_authenticated %}-->
-                <li>
-                    <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
-                       th:href="@{/logout}">Log Out</a>
-                </li>
-                <!--                {% else %}-->
-                <li>
-                    <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
-                       th:href="@{/signup}">Sign up</a>
-                </li>
-                <li>
-                    <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
-                       th:href="@{/login}">Log in</a>
-                </li>
-                <!--                {% endif %}-->
-            </ul>
-        </nav>
-
-        <div class="colorlib-footer">
-            <p><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                Copyright &copy;<script>document.write(new Date().getFullYear());</script>
-                All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a
-                        href="https://colorlib.com" target="_blank">Colorlib</a>
-
-        </div>
+    <aside role="complementary" class="js-fullheight text-center justify-content-center"
+           xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+    <h1><a th:href="@{/}">Remembering</a></h1>
+    <nav role="navigation">
+        <ul>
+            <li class="active"><a th:href="@{/}">Home</a></li>
+            <li><a th:href="@{/album/photos}">Photography</a></li>
+            <li><a th:href="@{/album/video}">동영상</a></li>
+            <li><a th:href="@{/board/memorial-posts}">게시판</a></li>
+<!--            <li><a th:href="@{/board/excercise}">연습</a></li>-->
+            <th:block th:if="${servletPath} == '/board/posts'">
+                <ol>
+                    <li style><a th:href="@{/board/post/write}">작성하기</a></li>
+                </ol>
+            </th:block>
+            <li><a th:href="@{/board/letters}">가족 공간</a></li>
+            <!--                {% comment %} 사용자가 로그인 되어 있으면, 로그아웃 버튼을 화면에 표시 {% endcomment %}-->
+            <!--                {% if user.is_authenticated %}-->
+            <li sec:authorize="!isAuthenticated()">
+                <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
+                   th:href="@{/login}">Log In</a>
+            </li>
+            <li sec:authorize="isAuthenticated()">
+                <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
+                   th:href="@{/logout}">Log Out</a>
+            </li>
+            <!--                {% else %}-->
+            <li sec:authorize="!isAuthenticated()">
+                <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
+                   th:href="@{/signup}">Sign up</a>
+            </li>
+        </ul>
+    </nav>
     </aside>

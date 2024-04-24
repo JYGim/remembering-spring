@@ -1,0 +1,42 @@
+<aside th:fragment="aside" role="complementary" class="" id="felici-aside">
+  <h1><a th:href="@{/}">Remembering</a></h1>
+  <!--Main Navigation-->
+  <!-- Sidebar -->
+  <nav id="sidebarMenu" class="collapse d-lg-block sidebar collapse bg-white">
+    <ul>
+      <li class="colorlib-active"><a th:href="@{/}">Home</a></li>
+      <li><a th:href="@{/album/photos}">Photography</a></li>
+      <li><a th:href="@{/album/video}">동영상</a></li>
+      <li><a th:href="@{/board/memorial-posts}">게시판</a></li>
+      <th:block th:if="${servletPath} == '/board/posts'">
+        <ol>
+          <li style><a th:href="@{/board/post/write}">작성하기</a></li>
+        </ol>
+      </th:block>
+      <li><a th:href="@{/board/letters}">가족 공간</a></li>
+      <!--                {% comment %} 사용자가 로그인 되어 있으면, 로그아웃 버튼을 화면에 표시 {% endcomment %}-->
+      <!--                {% if user.is_authenticated %}-->
+      <li sec:authorize="!isAuthenticated()">
+        <a
+          class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
+          th:href="@{/login}"
+          >Log In</a
+        >
+      </li>
+      <li sec:authorize="isAuthenticated()">
+        <a
+          class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
+          th:href="@{/logout}"
+          >Log Out</a
+        >
+      </li>
+      <li sec:authorize="!isAuthenticated()">
+        <a
+          class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
+          th:href="@{/signup}"
+          >Sign up</a
+        >
+      </li>
+    </ul>
+  </nav>
+</aside>

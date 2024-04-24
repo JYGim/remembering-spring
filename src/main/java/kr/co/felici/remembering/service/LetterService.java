@@ -1,128 +1,308 @@
 package kr.co.felici.remembering.service;
 
 
-
+import jakarta.persistence.EntityManager;
+import kr.co.felici.remembering.domain.BoardImage;
 import kr.co.felici.remembering.domain.Letter;
+import kr.co.felici.remembering.domain.BoardVideo;
+import kr.co.felici.remembering.domain.User;
 import kr.co.felici.remembering.dto.AddLetterDto;
+import kr.co.felici.remembering.dto.UpdateLetterDto;
+import kr.co.felici.remembering.repository.BoardVideoRepository;
+import kr.co.felici.remembering.repository.BoardImageRepository;
 import kr.co.felici.remembering.repository.LetterRepository;
+import kr.co.felici.remembering.repository.UserRepository;
+import kr.co.felici.remembering.util.MultipartProcessor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.*;
 import java.io.File;
+import java.io.IOException;
+import java.security.Principal;
+import java.util.*;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * author: felici
  */
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LetterService {
 
+    private final UserRepository userRepository;
     private final LetterRepository letterRepository;
+    private final BoardImageRepository imageRepository;
+    private final BoardVideoRepository boardVideoRepository;
+    private final EntityManager em;
 
-    public List<Letter> getAllPost() {
-        return letterRepository.findAll();
-    }
-
-    public void addLetter(AddLetterDto addLetterDto) throws Exception {
-
-        MultipartFile photoMFile = addLetterDto.getPhoto();
-        MultipartFile videoMFile = addLetterDto.getVideo();
-        String originalPhotoFileName = "";
-        String originalVideoFileName = "";
-        String upLoadPhotoFileName = "";
-        String upLoadVideoFileName = "";
-
-        String uploadPath = "/home/felici/studyPj/spring-boot-study/blog-api-namsan22/src/main/resources/static/post/files/";
-
-        File photoFile = null;
-        File videoFile = null;
-
-
-        if(photoMFile.getSize() > 0) {
-            originalPhotoFileName = photoMFile.getOriginalFilename();
-            upLoadPhotoFileName = createServerFileName(originalPhotoFileName);
-            photoFile = new File(uploadPath + File.separator + "photo" + File.separator + upLoadPhotoFileName);
-
-            if(!photoFile.exists()) {
-                photoFile.mkdirs();
-            }
-            photoMFile.transferTo(new File(uploadPath + File.separator + "photo" + File.separator + upLoadPhotoFileName));
-        }
-        if(videoMFile.getSize() > 0) {
-            originalVideoFileName = videoMFile.getOriginalFilename();
-            upLoadVideoFileName = createServerFileName(originalVideoFileName);
-            videoFile = new File(uploadPath + "video" + File.separator + upLoadVideoFileName);
-
-            if(!videoFile.exists()) {
-                videoFile.mkdirs();
-            }
-
-            videoMFile.transferTo(new File(uploadPath + "video" + File.separator + upLoadPhotoFileName));
-        }
-
-//        String uploadPath = "resources//static//";
-//        String uploadPath = "resources//static//post//files//photos";
-//        String uploadPath = "//src//main//resources//static//post//files//photos";
-//        String uploadPath = "\\src\\main\\resources\\static\\post\\files\\photos";
-//        String uploadPath = "/static/post/files/photos";
-//        String uploadPath = "/home/felici/studyPj/spring-boot-study/blog-api-namsan22/src/main/resources/static/post/files/";
-
-        // 2. 원본 파일 이름 알아오기
-
-
-        // 3. 파일 이름 중복되지 않게 이름 변경(서버에 저장할 이름) UUID 사용
-//        UUID uuid = UUID.randomUUID();
-        // 4. 파일 생성
-//        File file1 = new File(uploadPath + File.separator + upLoadPhotoFileName);
-//        File file1 = new File(uploadPath);
-//        File file1 = new File(uploadPath);
-
-
-
-
-
-        // 5. 서버로 전송
-//        if(photoFile != null && !photoFile.exists()) {
-//            photoFile.mkdirs();
-//            photoMFile.transferTo(new File(uploadPath + "photo" + File.separator + upLoadPhotoFileName));
-//        }
-//        if(videoFile != null && !videoFile.exists()) {
-//            videoFile.mkdirs();
-//            videoFile.transferTo(new File(uploadPath +"video" + File.separator + upLoadPhotoFileName));
-//        }
-
-
-
-        String dpSavePathForPhoto = "post/files/photo";
-        String dpSavePathForVideo = "post/files/video";
-
-        String photoArg = null;
-        String videoArg = null;
-
-        if(upLoadPhotoFileName != "") {
-            photoArg = dpSavePathForPhoto + File.separator + upLoadPhotoFileName;
-        }
-        if(upLoadVideoFileName != "") {
-            videoArg = dpSavePathForPhoto + File.separator + upLoadVideoFileName;
-        }
-
-
-
-        letterRepository.save(Letter.builder()
-                        .contents(addLetterDto.getContents())
-                        .photo(photoArg)
-                        .video(videoArg)
-                        .build());
-
-    }
+    String originalFileName = "";
+    String upLoadFileName = "";
+    File uploadFile = null;
+    String absolutePath = new File("").getAbsolutePath() + File.separator;
+    String uploadlettersRootPath = absolutePath + "media/letters";
+    String basePath = "";
+    String lettersPathForImages = uploadlettersRootPath + File.separator + "images";
+    String lettersPathForVideos = uploadlettersRootPath + File.separator + "videos";
+    String dbSavebasePath = "";
+    String dbSaveImagePath = "images";
+    String dbSaveVideoPath = "videos";
+    String pathArg = null;
+    String mPhotoFile = "photoMFile";
+    String mVideoFile = "videoMFile";
 
     public Letter findById(Long letterId) {
         return letterRepository.findById(letterId)
-                .orElseThrow();
+                .orElseThrow(() -> new IllegalArgumentException("not found : " + letterId));
     }
+    public Page<Letter> getAll(int page) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        sorts.add(Sort.Order.asc("modifiedAt"));
+        PageRequest pageable = PageRequest.of(page, 2, Sort.by(sorts));
+        return letterRepository.findAll(pageable);
+    }
+    @Transactional
+    public void addLetter(AddLetterDto addLetterDto) throws Exception {
+        log.info(absolutePath);
+
+        List<BoardImage> imageFileList = new ArrayList<>();
+        List<BoardVideo> videoFileList = new ArrayList<>();
+
+        Optional<User> byEmail = userRepository.findByEmail(addLetterDto.getEmail());
+
+
+        Letter letter = Letter.builder()
+                .user(byEmail.get())
+                .contents(addLetterDto.getContents())
+                .build();
+
+
+
+        addMediaFile(letter, addLetterDto, mPhotoFile, imageFileList, videoFileList);
+        addMediaFile(letter, addLetterDto, mVideoFile, imageFileList, videoFileList);
+
+        if (!imageFileList.isEmpty()) {
+            for (BoardImage image : imageFileList) {
+                log.info(image.getPath(), image.getOriginalFilename(), image.getLetter(), image.getFileSize());
+                imageRepository.save(image);
+            }
+        }
+
+        if (!videoFileList.isEmpty()) {
+            for (BoardVideo video : videoFileList) {
+                log.info(video.getPath());
+                boardVideoRepository.save(video);
+            }
+        }
+
+
+
+
+        letterRepository.save(letter);
+//        em.persist(letter);
+    }
+
+
+    @Transactional
+    public Letter updateLetter(UpdateLetterDto updateLetterDto) throws IOException {
+
+        List<BoardImage> imageFileList = new ArrayList<>();
+        List<BoardVideo> videoFileList = new ArrayList<>();
+
+        Letter letter = em.find(Letter.class, updateLetterDto.getId());
+        letter.addContents(updateLetterDto.getContents());
+
+        updateMultimedia(letter, updateLetterDto, mPhotoFile, imageFileList, videoFileList);
+        updateMultimedia(letter, updateLetterDto, mVideoFile, imageFileList, videoFileList);
+
+        return letter;
+    }
+
+    private void addMediaFile(Letter letter, AddLetterDto addLetterDto,
+                               String typeOfFile, List<BoardImage> imageFileList,
+                               List<BoardVideo> videoFileList) throws IOException {
+        List<MultipartFile> multipartFiles = null;
+
+        switch (typeOfFile) {
+            case "photoMFile":
+                multipartFiles = addLetterDto.getPhoto();
+                basePath = lettersPathForImages;
+                dbSavebasePath = dbSaveImagePath;
+                break;
+            case "videoMFile":
+                multipartFiles = addLetterDto.getVideo();
+                basePath = lettersPathForVideos;
+                dbSavebasePath = dbSaveVideoPath;
+                break;
+        }
+        if (multipartFiles != null) {
+            for (MultipartFile multipartFile : multipartFiles) {
+                if (multipartFile.getSize() >= 1) {
+                    originalFileName = multipartFile.getOriginalFilename();
+
+                    upLoadFileName = createServerFileName(originalFileName);
+
+
+                    uploadFile = new File(basePath + File.separator + upLoadFileName);
+                    if (!uploadFile.exists()) {
+                        uploadFile.mkdirs();
+                    }
+                    multipartFile.transferTo(uploadFile);
+
+//                    pathArg = dbSavebasePath + File.separator + upLoadFileName;
+                    pathArg = upLoadFileName;
+
+                    if (typeOfFile.equals("photoMFile")) {
+                        BoardImage image = BoardImage.builder()
+                                .path(pathArg)
+                                .originalFilename(originalFileName)
+                                .fileSize(multipartFile.getSize())
+                                .build();
+                        imageFileList.add(image);
+                        letter.addImage(image);
+                    } else if (typeOfFile.equals("videoMFile")) {
+                        BoardVideo video = BoardVideo.builder()
+                                .path(pathArg)
+                                .originalFilename(originalFileName)
+                                .fileSize(multipartFile.getSize())
+                                .build();
+                        videoFileList.add(video);
+                        letter.addVideo(video);
+                    }
+                }
+            }
+        }
+    }
+
+    private void updateMultimedia(Letter letter, UpdateLetterDto updateLetterDto, String typeOfFile,
+                                  List<BoardImage> imageFileList,
+                                  List<BoardVideo> videoFileList) throws IOException {
+        List<MultipartFile> multipartFiles = null;
+
+        switch (typeOfFile) {
+            case "photoMFile":
+                multipartFiles = updateLetterDto.getPhoto();
+                basePath = lettersPathForImages;
+                dbSavebasePath = dbSaveImagePath;
+                break;
+            case "videoMFile":
+                multipartFiles = updateLetterDto.getVideo();
+                basePath = lettersPathForVideos;
+                dbSavebasePath = dbSaveVideoPath;
+                break;
+        }
+        if (multipartFiles != null) {
+            for (MultipartFile multipartFile : multipartFiles) {
+                if (multipartFile.getSize() >= 1) {
+                    originalFileName = multipartFile.getOriginalFilename();
+
+                    upLoadFileName = createServerFileName(originalFileName);
+
+
+                    uploadFile = new File(basePath + File.separator + upLoadFileName);
+                    if (!uploadFile.exists()) {
+                        uploadFile.mkdirs();
+                    }
+                    multipartFile.transferTo(uploadFile);
+
+//                    pathArg = dbSavebasePath + File.separator + upLoadFileName;
+                    pathArg = upLoadFileName;
+
+                    if (typeOfFile.equals("photoMFile")) {
+                        BoardImage image = BoardImage.builder()
+                                .path(pathArg)
+                                .originalFilename(originalFileName)
+                                .fileSize(multipartFile.getSize())
+                                .build();
+                        imageFileList.add(image);
+                        letter.addImage(image);
+                        em.persist(image);
+                    } else if (typeOfFile.equals("videoMFile")) {
+                        BoardVideo video = BoardVideo.builder()
+                                .path(pathArg)
+                                .originalFilename(originalFileName)
+                                .fileSize(multipartFile.getSize())
+                                .build();
+                        videoFileList.add(video);
+                        letter.addVideo(video);
+                        em.persist(video);
+                    }
+                }
+            }
+        }
+    }
+
+    public void deleteLetter(Long id) {
+
+        Letter theLetter = findById(id);
+        List<BoardImage> images = theLetter.getImages();
+        List<BoardVideo> videos = theLetter.getVideos();
+        if (!images.isEmpty()) {
+            for (BoardImage image : images) {
+                try {
+                    File file = new File(lettersPathForImages + File.separator + image.getPath());
+                    log.info(file.getAbsolutePath());
+                    if (file.exists()) {
+                        boolean result = file.delete();
+                        if (result) {
+                            log.info("파일 삭제 성공");
+                        } else {
+                            log.info("파일 삭제 실패");
+                        }
+                    } else {
+                        log.info("파일이 없어요!");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }
+        if (!videos.isEmpty()) {
+            for (BoardVideo video : videos) {
+                try {
+                    File file = new File(lettersPathForVideos + File.separator + video.getPath());
+                    log.info(file.getAbsolutePath());
+                    if (file.exists()) {
+                        boolean result = file.delete();
+                        if (result) {
+                            log.info("파일 삭제 성공");
+                        } else {
+                            log.info("파일 삭제 실패");
+                        }
+                    } else {
+                        log.info("파일이 없어요!");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }
+
+
+        letterRepository.deleteById(id);
+    }
+
+//    @Transactional
+//    public void deleteLetterImage(Long id) {
+//        Letter letter = em.find(Letter.class, id);
+//
+//
+//
+//
+//    }
 
     public String getFullPath(String filename, String fileDir) {
         return fileDir + filename;
@@ -142,7 +322,43 @@ public class LetterService {
         return originalFilename.substring(pos + 1);
     }
 
-    public void deleteLetter(Long id) {
-        letterRepository.deleteById(id);
-    }
+
+//    private List<> getList(AddLetterDto addLetterDto, String type) throws IOException {
+//
+//
+//        if(Objects.equals(type, "photo")) {
+//
+//
+//            if(!addLetterDto.getPhoto().isEmpty()) {
+//                for(MultipartFile multipartFile: addLetterDto.getPhoto()) {
+//                    if(multipartFile.getSize() >= 1) {
+//                        originalFileName = multipartFile.getOriginalFilename();
+//                        upLoadFileName = createServerFileName(originalFileName);
+//                        mediaFile = new File(uploadPath + File.separator + type + File.separator + upLoadFileName);
+////                      uploadFile = new File(uploadPath + File.separator + "photo" + File.separator + upLoadPhotoFileName);
+//                        if(!mediaFile.exists()) {
+//                            mediaFile.mkdirs();
+//                        }
+//                        multipartFile.transferTo(new File(uploadPath + File.separator + type + File.separator + upLoadFileName));
+//                    }
+//                    if(upLoadFileName != "") {
+//                        photoArg = uploadPath + File.separator + type + File.separator + upLoadFileName;
+//
+//                        Image image = new Image(
+//                                photoArg,
+//                                originalFileName,
+//                                multipartFile.getSize()
+//                        );
+//
+//                        imageFileList.add(image);
+//                        return imageFileList;
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//
+//    }
+
+
 }

@@ -3,11 +3,15 @@ package kr.co.felici.remembering.dto;
 
 
 import kr.co.felici.remembering.domain.Letter;
+import kr.co.felici.remembering.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.security.Principal;
+import java.util.List;
 
 /**
  * author: felici
@@ -19,9 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 @Builder
 public class AddLetterDto {
 
+    private String email;
     private String contents;
-    private MultipartFile photo;
-    private MultipartFile video;
+    private List<MultipartFile> photo;
+    private List<MultipartFile> video;
 
 //    @Builder
 //    public AddLetterDto(String contents, MultipartFile photo, MultipartFile video) {
@@ -30,11 +35,11 @@ public class AddLetterDto {
 //        this.video = video;
 //    }
 
-    public AddLetterDto(Letter letter) {
-        this.contents = letter.getContents();
+//    public AddLetterDto(Letter letter) {
+//        this.contents = letter.getContents();
 //        this.photo = letter.getPhoto();
 //        this.video = letter.getVideo();
-    }
+//    }
 
 
 
