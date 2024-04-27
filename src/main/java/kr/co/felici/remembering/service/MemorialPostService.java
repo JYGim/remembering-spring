@@ -65,6 +65,12 @@ public class MemorialPostService {
 
     Boolean isSuccess = false;
 
+    String imagePathToDelete = "";
+
+    String baseFilePath = "/home/felici/studyPj/spring-boot-study/remembering/media";
+    String lettersFilePath = baseFilePath + "/letters";
+    String memorialPostsFilePath = baseFilePath + "/memorialPosts";
+
 
 
     public Boolean checkAuth(Long id) {
@@ -233,8 +239,99 @@ public class MemorialPostService {
         return memorialPost;
     }
 
+//    public List<MemorialPost> searchMemorialPost(String searchString) {
+//
+//        return memorialPostRepository.findByWriterOrContents(searchString);
+//
+//    }
+
+    public MemorialPost deletePostImage(Map<String, String> params) {
+
+        String postId = params.get("postId");
+        String pwd = params.get("pwd");
+        String imageId = params.get("imageId");
+
+        log.info("log, params-postId, pwd: " + postId + ", " + pwd);
+        log.info("log, params-imageId: " + imageId);
+
+        MemorialPost thePost = this.findById(Long.parseLong(postId));
+        String pw = thePost.getPw();
+
+
+//        List<BoardImage> images = thePost.getImages();
+
+        if(bCryptPasswordEncoder.matches(pwd, pw)) {
+//            for(BoardImage image : images) {
+//                imageRepository.deleteById(image.getId());
+//
+//                deleteFile(image, null, memorialPostsFilePath);
+//                isSuccess = true;
+//
+//            }
+            imagePathToDelete = getDeletedImageName(imageId);
+            imageRepository.deleteById(Long.parseLong(imageId));
+            isSuccess = true;
+
+        } else {
+            log.info("log, 비번이 맞지 않아 수정되지 않았습니다. !!!");
+            isSuccess = false;
+        }
+
+        return thePost;
+    }
+
+
+
+    private String getDeletedImageName(String imageId) {
+        Optional<BoardImage> byId = imageRepository.findById(Long.parseLong(imageId));
+        String imageName = byId.get().getPath();
+        return imageName;
+    }
+
+    public String passDeletedImagePath() {
+        String passDeletedImagePath = imagePathToDelete;
+        imagePathToDelete = "";
+        return passDeletedImagePath;
+    }
+
     public Boolean succeed() {
         return isSuccess;
+    }
+
+    public void deleteFile(BoardImage image, BoardVideo video, String type) {
+        if(image != null) {
+            try {
+                File file = new File( type + File.separator + "images" + File.separator + image.getPath());
+
+                if(file.exists()) {
+                    boolean result = file.delete();
+                    if(result) {
+                        log.info("파일 지웠어요.");
+                    }
+                } else {
+                    log.info("파일 없어요.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if(video != null) {
+            try {
+                File file = new File( type + File.separator + "videos" + File.separator + video.getPath());
+
+                if(file.exists()) {
+                    boolean result = file.delete();
+                    if(result) {
+                        System.out.println("파일 지웠어요.");
+                    }
+                } else {
+                    System.out.println("파일 없어요.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void addmediaFile(MemorialPost memorialPost, AddMemorialPostDto addMemorialPostDto,

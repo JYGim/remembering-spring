@@ -28,6 +28,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -123,7 +125,7 @@ public class BoardController {
         Letter letter = image.getLetter();
         imageService.deleteImage(image_id);
 
-        deleteFile(image, null, lettersFilePath);
+        deleteFiles(image, null, lettersFilePath);
 
         model.addAttribute("letter", letter);
         return "redirect:/board/letter/update/" + letter.getId();
@@ -136,7 +138,7 @@ public class BoardController {
         Letter letter = video.getLetter();
         boardVideoService.deleteBoardVideo(video_id);
 
-        deleteFile(null, video, lettersFilePath);
+        deleteFiles(null, video, lettersFilePath);
 
         model.addAttribute("letter", letter);
         return "redirect:/board/letter/update/" + letter.getId();
@@ -203,7 +205,6 @@ public class BoardController {
 
     @PostMapping("/memorial-post/update")
     public String updateMemorialPost(UpdateMemorialPostDto updateMemorialPostDto,
-                                        Model model,
                                         RedirectAttributes redirectAttributes) throws IOException {
         MemorialPost thePost = memorialPostService.updateMemorialPost(updateMemorialPostDto);
 
@@ -220,9 +221,34 @@ public class BoardController {
         MemorialPost memorialPost = image.getMemorialPost();
         imageService.deleteImage(image_id);
 
-        deleteFile(image, null, memorialPostsFilePath);
+        deleteFiles(image, null, memorialPostsFilePath);
 
         model.addAttribute("memorialPost", memorialPost);
+        return "redirect:/board/memorial-post/update/" + memorialPost.getId();
+    }
+
+    @PostMapping("/memorial-post/deleteImg/")
+    public String deletePostImage(@RequestParam Map<String, String> params,
+                                  RedirectAttributes redirectAttributes
+                                  ) throws Exception {
+
+        MemorialPost memorialPost = memorialPostService.deletePostImage(params);
+
+        String imagePathToDelete = memorialPostService.passDeletedImagePath();
+        Boolean isSuccessFul = memorialPostService.succeed();
+        log.info("log, imagePathTodelete: " + imagePathToDelete);
+        log.info("log, isSuccessFul: " + isSuccessFul);
+
+        if(imagePathToDelete != "") {
+
+            deleteFile(imagePathToDelete, "image", memorialPostsFilePath);
+
+
+        }
+
+
+        redirectAttributes.addFlashAttribute("isSuccessFul", isSuccessFul);
+
         return "redirect:/board/memorial-post/update/" + memorialPost.getId();
     }
 
@@ -233,7 +259,7 @@ public class BoardController {
         MemorialPost memorialPost = video.getMemorialPost();
         boardVideoService.deleteBoardVideo(video_id);
 
-        deleteFile(null, video, memorialPostsFilePath);
+        deleteFiles(null, video, memorialPostsFilePath);
 
         model.addAttribute("memorialPost", memorialPost);
         return "redirect:/board/memorial-post/update/" + memorialPost.getId();
@@ -273,7 +299,17 @@ public class BoardController {
         return "redirect:/board/memorial-posts";
     }
 
-    public void deleteFile(BoardImage image, BoardVideo video, String type) {
+//    @GetMapping("/memorial-post/search/{q}")
+//    public List<MemorialPost> searchMemorialPost(@RequestParam("searchString") String q) {
+//
+//        List<MemorialPost> memorialPosts = memorialPostService.searchMemorialPost(searchString);
+//
+//
+//        return memorialPosts;
+//    }
+
+
+    public void deleteFiles(BoardImage image, BoardVideo video, String type) {
         if(image != null) {
             try {
                 File file = new File( type + File.separator + "images" + File.separator + image.getPath());
@@ -308,6 +344,46 @@ public class BoardController {
             }
         }
     }
+
+    public void deleteFile(String path, String mediaType, String type) {
+        if(mediaType.equals("image")) {
+            try {
+                File file = new File( type + File.separator + "images" + File.separator + path);
+
+                if(file.exists()) {
+                    boolean result = file.delete();
+                    if(result) {
+                        log.info("파일 지웠어요.");
+                    }
+                } else {
+                    log.info("파일 없어요.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if(mediaType.equals("video")) {
+            try {
+                File file = new File( type + File.separator + "videos" + File.separator + path);
+
+                if(file.exists()) {
+                    boolean result = file.delete();
+                    if(result) {
+                        System.out.println("파일 지웠어요.");
+                    }
+                } else {
+                    System.out.println("파일 없어요.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }
+
+
 
 
     private boolean isAuthenticated() {
