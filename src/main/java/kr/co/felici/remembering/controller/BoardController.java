@@ -216,9 +216,10 @@ public class BoardController {
                                         RedirectAttributes redirectAttributes) throws IOException {
         MemorialPost thePost = memorialPostService.updateMemorialPost(updateMemorialPostDto);
 
-        Boolean isSuccessful = memorialPostService.succeed();
-        redirectAttributes.addFlashAttribute("isSuccessful", isSuccessful);
-        log.info("isSuccessful: " + isSuccessful);
+        Map<String, Boolean> succeed = memorialPostService.succeed();
+        Boolean updateIsSuccessful = succeed.get("updateIsSuccessful");
+        redirectAttributes.addFlashAttribute("updateIsSuccessful", updateIsSuccessful);
+        log.info("updateIsSuccessful: " + updateIsSuccessful);
         return "redirect:/board/memorial-posts";
     }
 
@@ -243,9 +244,10 @@ public class BoardController {
         MemorialPost memorialPost = memorialPostService.deletePostImage(params);
 
         String imagePathToDelete = memorialPostService.passDeletedImagePath();
-        Boolean isSuccessFul = memorialPostService.succeed();
+        Map<String, Boolean> succeed = memorialPostService.succeed();
+        Boolean deleteIsSuccessful = succeed.get("deleteIsSuccessful");
         log.info("log, imagePathTodelete: " + imagePathToDelete);
-        log.info("log, isSuccessFul: " + isSuccessFul);
+        log.info("log, deleteIsSuccessful: " + deleteIsSuccessful);
 
         if(imagePathToDelete != "") {
 
@@ -255,7 +257,7 @@ public class BoardController {
         }
 
 
-        redirectAttributes.addFlashAttribute("isSuccessFul", isSuccessFul);
+        redirectAttributes.addFlashAttribute("deleteIsSuccessful", deleteIsSuccessful);
 
         return "redirect:/board/memorial-post/update/" + memorialPost.getId();
     }

@@ -159,7 +159,7 @@
                             </div>
                         </div>
 
-                        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog"
+                        <div class="modal fade" id="delErrorModal" tabindex="-1" role="dialog"
                              aria-labelledby="errorModalLabel" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
@@ -179,6 +179,25 @@
                             </div>
                         </div>
 
+                        <div class="modal fade" id="modifyErrorModal" tabindex="-1" role="dialog"
+                             aria-labelledby="errorModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">삭제 안됨</h5>
+                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>비밀번호가 맞지 않아 수정되지 않았습니다. </p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                     </th:block>
                 </th:block>
@@ -288,13 +307,25 @@
     <script th:src="@{/js/main.js}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-    <th:block th:if="${error} or (${isSuccessful} == false)">
+    <th:block th:if="(${updateIsSuccessful} == false)">
 
 
         <script>
             $(function() {
-                $('#errorModal').modal('toggle');
+                $('#modifyErrorModal').modal('toggle');
             })
+
+        </script>
+    </th:block>
+
+    <th:block th:if="(${deleteIsSuccessful} == false)">
+
+
+        <script>
+            $(function() {
+                $('#delErrorModal').modal('toggle');
+            })
+
 
         </script>
     </th:block>

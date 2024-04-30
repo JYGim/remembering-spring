@@ -69,7 +69,10 @@ public class MemorialPostService {
     String mPhotoFile = "photoMFile";
     String mVideoFile = "videoMFile";
 
-    Boolean isSuccess = false;
+    Boolean deleteIsSuccessful = false;
+    Boolean updateIsSuccessful = false;
+
+    Map<String, Boolean> isSuccessfulMap = new HashMap<>();
 
     String imagePathToDelete = "";
 
@@ -99,7 +102,7 @@ public class MemorialPostService {
     }
     public Page<MemorialPost> getAll(int page, String kw) {
         List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.asc("modifiedAt"));
+        sorts.add(Sort.Order.desc("modifiedAt"));
         PageRequest pageable = PageRequest.of(page, 2, Sort.by(sorts));
 
         if(kw != null && kw.equals("")) {
@@ -236,7 +239,7 @@ public class MemorialPostService {
 
         String password = updateMemorialPostDto.getPw();
         log.info("password: " + password);
-        log.info("isSuccess: " + isSuccess);
+        log.info("updateIsSuccessful: " + updateIsSuccessful);
 
         MemorialPost memorialPost = em.find(MemorialPost.class, updateMemorialPostDto.getId());
 
@@ -250,11 +253,13 @@ public class MemorialPostService {
             updateMediaFile(memorialPost, updateMemorialPostDto, mPhotoFile, imageFileList, videoFileList);
             updateMediaFile(memorialPost, updateMemorialPostDto, mVideoFile, imageFileList, videoFileList);
 
-            isSuccess = true;
+            updateIsSuccessful = true;
+            isSuccessfulMap.put("updateIsSuccessful", updateIsSuccessful);
 
         } else {
             log.info("비번이 맞지 않아 수정되지 않았습니다. !!!");
-            isSuccess = false;
+            updateIsSuccessful = false;
+            isSuccessfulMap.put("updateIsSuccessful", updateIsSuccessful);
         }
 
         return memorialPost;
@@ -299,11 +304,14 @@ public class MemorialPostService {
 //            }
             imagePathToDelete = getDeletedImageName(imageId);
             imageRepository.deleteById(Long.parseLong(imageId));
-            isSuccess = true;
+            deleteIsSuccessful = true;
+            isSuccessfulMap.put("deleteIsSuccessful", deleteIsSuccessful);
 
         } else {
             log.info("log, 비번이 맞지 않아 수정되지 않았습니다. !!!");
-            isSuccess = false;
+            deleteIsSuccessful = false;
+            isSuccessfulMap.put("deleteIsSuccessful", deleteIsSuccessful);
+
         }
 
         return thePost;
@@ -323,8 +331,9 @@ public class MemorialPostService {
         return passDeletedImagePath;
     }
 
-    public Boolean succeed() {
-        return isSuccess;
+    public Map<String, Boolean> succeed() {
+
+        return isSuccessfulMap;
     }
 
     public void deleteFile(BoardImage image, BoardVideo video, String type) {
