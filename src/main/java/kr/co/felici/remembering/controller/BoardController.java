@@ -3,17 +3,13 @@ package kr.co.felici.remembering.controller;
 
 import kr.co.felici.remembering.domain.*;
 
-import kr.co.felici.remembering.dto.AddLetterDto;
-import kr.co.felici.remembering.dto.AddMemorialPostDto;
-import kr.co.felici.remembering.dto.UpdateLetterDto;
-import kr.co.felici.remembering.dto.UpdateMemorialPostDto;
-import kr.co.felici.remembering.service.BoardVideoService;
-import kr.co.felici.remembering.service.BoardImageService;
-import kr.co.felici.remembering.service.LetterService;
-import kr.co.felici.remembering.service.MemorialPostService;
+import kr.co.felici.remembering.dto.*;
+import kr.co.felici.remembering.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.Parameter;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,6 +41,8 @@ public class BoardController {
     private final LetterService letterService;
     private final BoardImageService imageService;
     private final BoardVideoService boardVideoService;
+
+
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -158,23 +156,33 @@ public class BoardController {
         return "redirect:/board/letters";
     }
 
-    @GetMapping("/excercise")
-    public String ex(Model model,
-                             @RequestParam(value = "page", defaultValue = "0") int page) {
-        Page<MemorialPost> posts = memorialPostService.getAll(page);
-
-        model.addAttribute("posts", posts);
-
-        return "board/excercise";
-    }
+//    @GetMapping("/excercise")
+//    public String ex(Model model,
+//                             @RequestParam(value = "page", defaultValue = "0") int page) {
+//        Page<MemorialPost> posts = memorialPostService.getAll(page);
+//
+//        model.addAttribute("posts", posts);
+//
+//        return "board/excercise";
+//    }
 
     @GetMapping("/memorial-posts")
     public String getAllPost(Model model,
-                             @RequestParam(value = "page", defaultValue = "0") int page) {
-        Page<MemorialPost> posts = memorialPostService.getAll(page);
+                             @RequestParam(value = "page", defaultValue = "0") int page,
+                             @RequestParam(value = "kw", defaultValue = "") String kw) {
+
+        log.info("log, getAllPost- kw: " + kw);
+
+        Page<MemorialPost> posts = memorialPostService.getAll(page, kw);
+        if(kw.equals("")) {
+            log.info("log,  kw: " + kw);
+        } else if(kw == null) {
+            log.info("log,  kw: null");
+        }
 
         model.addAttribute("posts", posts);
-
+        model.addAttribute("kw", kw);
+        log.info("log,  posts: " + posts);
         return "board/memorialpost_list";
     }
 
@@ -300,12 +308,24 @@ public class BoardController {
     }
 
 //    @GetMapping("/memorial-post/search/{q}")
-//    public List<MemorialPost> searchMemorialPost(@RequestParam("searchString") String q) {
+//    public List<MemorialPostDto> searchMemorialPost(@RequestParam Map<String, String> requestParams) {
 //
-//        List<MemorialPost> memorialPosts = memorialPostService.searchMemorialPost(searchString);
+//        return memorialPostManager.find(requestParams);
 //
 //
-//        return memorialPosts;
+//
+//    }
+
+//    @GetMapping("/memorial-post/search/{q}")
+//    public String searchMemorialPost(@PathVariable String q,
+//                                     @RequestParam(value = "page", defaultValue = "0") int page,
+//                                     RedirectAttributes redirectAttributes) {
+//
+//        Page<MemorialPost> posts = memorialPostService.searchMemorialPost(q, page);
+//        redirectAttributes.addFlashAttribute("posts", posts);
+//
+//        return "redirect:board/memorialpost_list";
+//
 //    }
 
 

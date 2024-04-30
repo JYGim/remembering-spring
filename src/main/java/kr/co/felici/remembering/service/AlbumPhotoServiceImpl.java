@@ -34,7 +34,7 @@ public class AlbumPhotoServiceImpl implements IAlbumPhotoService {
     public Page<AlbumPhoto> getAll(int page) {
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.asc("displayOrder"));
-        PageRequest pageable = PageRequest.of(page, 2, Sort.by(sorts));
+        PageRequest pageable = PageRequest.of(page, 4, Sort.by(sorts));
         return albumPhotoRepository.findAll(pageable);
     }
 

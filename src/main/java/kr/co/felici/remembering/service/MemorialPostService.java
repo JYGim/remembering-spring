@@ -3,10 +3,12 @@ package kr.co.felici.remembering.service;
 
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.*;
 import kr.co.felici.remembering.domain.BoardImage;
 import kr.co.felici.remembering.domain.Letter;
 import kr.co.felici.remembering.domain.MemorialPost;
 import kr.co.felici.remembering.domain.BoardVideo;
+import kr.co.felici.remembering.domain.specification.MemorialPostSpecification;
 import kr.co.felici.remembering.dto.*;
 import kr.co.felici.remembering.repository.BoardVideoRepository;
 import kr.co.felici.remembering.repository.BoardImageRepository;
@@ -15,7 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +47,8 @@ public class MemorialPostService {
     private final EntityManager em;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+
 
     private String originalFileName = "";
     String upLoadFileName = "";
@@ -91,13 +97,28 @@ public class MemorialPostService {
         return memorialPostRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
     }
-    public Page<MemorialPost> getAll(int page) {
+    public Page<MemorialPost> getAll(int page, String kw) {
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.asc("modifiedAt"));
         PageRequest pageable = PageRequest.of(page, 2, Sort.by(sorts));
-        Page<MemorialPost> posts = memorialPostRepository.findAll(pageable);
 
-        return posts;
+        if(kw != null && kw.equals("")) {
+            Page<MemorialPost> posts = memorialPostRepository.findAll(pageable);
+            log.info("log, posts: " + posts);
+            log.info("log, kw: " + kw);
+            return posts;
+
+        } else if (kw != null && !kw.isEmpty()) {
+            Specification<MemorialPost> spec = this.searchMemorialPost(kw);
+            Page<MemorialPost> posts = memorialPostRepository.findAll(spec, pageable);
+            log.info("log, spec: " + spec);
+            log.info("log, kw가 비어 있지 않아요");
+            log.info("log, posts의 수: " + posts.getTotalElements());
+            log.info("log, kw: " + kw);
+            return posts;
+        }
+
+        return null;
     }
     @Transactional
     public void addPost(AddMemorialPostDto addMemorialPostDto)
@@ -239,11 +260,19 @@ public class MemorialPostService {
         return memorialPost;
     }
 
-//    public List<MemorialPost> searchMemorialPost(String searchString) {
-//
-//        return memorialPostRepository.findByWriterOrContents(searchString);
-//
-//    }
+    public Specification<MemorialPost> searchMemorialPost(String kw) {
+        Specification<MemorialPost> spec = (root, query, criteriaBuilder) -> null;
+
+        if(kw != null && !kw.isEmpty()) {
+            spec = spec.and(MemorialPostSpecification.likeContents(kw));
+            spec = spec.or(MemorialPostSpecification.equalsWriter(kw));
+
+            log.info("log, spec: " + spec);
+
+        }
+
+        return spec;
+    }
 
     public MemorialPost deletePostImage(Map<String, String> params) {
 
@@ -484,5 +513,8 @@ public class MemorialPostService {
 
 
     private static final String URL_FORMAT = "%s/%s";
+
+
+
 
 }

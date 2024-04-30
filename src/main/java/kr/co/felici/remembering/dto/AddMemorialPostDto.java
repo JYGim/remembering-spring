@@ -16,16 +16,11 @@ import java.util.List;
 public class AddMemorialPostDto {
 
     private String writer;
+
     private String contents;
+
     private List<MultipartFile> photo;
     private List<MultipartFile> video;
     private String pw;
-
-
-//    private LocalDateTime posted_at;
-//    private LocalDateTime modified_at;
-//
-//    private Member member;
-
 
 }
