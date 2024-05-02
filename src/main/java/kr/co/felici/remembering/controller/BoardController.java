@@ -47,9 +47,11 @@ public class BoardController {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
-//    String absolutePath = new File("").getAbsolutePath() + File.separator;
+    String absolutePath = new File("").getAbsolutePath() + File.separator;
 //    String uploadRootPath = absolutePath + "media";
-    String basePath = "/home/felici/studyPj/spring-boot-study/remembering/media";
+//    String basePath = "/home/felici/studyPj/spring-boot-study/remembering/media";
+    String basePath = absolutePath + "/media";
+//    String basePath = "/home/felici/projects/remembering/media";
     String lettersFilePath = basePath + "/letters";
     String memorialPostsFilePath = basePath + "/memorialPosts";
 

@@ -76,7 +76,8 @@ public class MemorialPostService {
 
     String imagePathToDelete = "";
 
-    String baseFilePath = "/home/felici/studyPj/spring-boot-study/remembering/media";
+//    String baseFilePath = "/home/felici/studyPj/spring-boot-study/remembering/media";
+    String baseFilePath = "/home/felici/projects/remembering/media";
     String lettersFilePath = baseFilePath + "/letters";
     String memorialPostsFilePath = baseFilePath + "/memorialPosts";
 

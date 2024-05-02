@@ -1,6 +1,6 @@
 package kr.co.felici.remembering.dto;
 
-import app.tozzi.annotations.Searchable;
+//import app.tozzi.annotations.Searchable;
 import lombok.Data;
 
 /**
@@ -9,11 +9,11 @@ import lombok.Data;
 @Data
 public class MemorialPostDto {
 
-    @Searchable
-    private String writer;
-
-    @Searchable
-    private String contents;
+//    @Searchable
+//    private String writer;
+//
+//    @Searchable
+//    private String contents;
 
 
 

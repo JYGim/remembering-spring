@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,8 +22,11 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class BoardImageService {
 
-    private final Path postImagesUploadPath =
-            Paths.get("/home/felici/studyPj/spring-boot-study/remembering/media/memorialPosts/posts-images");
+//    String absolutePath = new File("").getAbsolutePath() + File.separator;
+
+//    private final Path postImagesUploadPath =
+//            Paths.get(absolutePath + "/media/memorialPosts/posts-images");
+//            Paths.get("/home/felici/projects/remembering/media/memorialPosts/posts-images");
 
     private final BoardImageRepository imageRepository;
     private final EntityManager em;

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+    <form th:action="@{/album/util/upload-data}" method="post" enctype="multipart/form-data">
+        <ul>
+            <li>첨부파일<input th:type="file" name="uploadFile"></li>
+        </ul>
+        <input th:type="submit" th:value="전송">
+    </form>
+
+</body>
+</html>

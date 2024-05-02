@@ -1,23 +1,23 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/test_database
+    url: jdbc:mysql://localhost:3306/remembering
     username: felici
     password: ekfvod2
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     defer-datasource-initialization: true
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
-  security:
-    user:
-      name: admin
-      password: 2222
-      roles: USER, ADMIN
+#  security:
+#    user:
+#      name: admin
+#      password: 2222
+#      roles: USER, ADMIN
   servlet:
     multipart:
       max-file-size: 100MB
@@ -25,7 +25,7 @@ spring:
 
   config:
     activate:
-      on-profile: local
+      on-profile: create
 
 #  spring:
 #    mvc:

@@ -20,8 +20,10 @@ public class WebConfig implements WebMvcConfigurer {
 //        registry.addResourceHandler("/letters/images/**")
 //                .addResourceLocations("file:///home/felici/studyPj/spring-boot-study/remembering/media/")
                 .addResourceLocations(
-                        "file:///home/felici/studyPj/spring-boot-study/remembering/media/letters/images/",
-                        "file:///home/felici/studyPj/spring-boot-study/remembering/media/memorialPosts/images/")
+//                        "file:///home/felici/studyPj/spring-boot-study/remembering/media/letters/images/",
+//                        "file:///home/felici/studyPj/spring-boot-study/remembering/media/memorialPosts/images/")
+                            "file:///home/felici/projects/remembering/media/letters/images/",
+                            "file:///home/felici/projects/remembering/media/memorialPosts/images/")
 //                .addResourceLocations(
 //                        "file:///home/felici/studyPj/spring-boot-study/remembering/media/letters/images/")
 

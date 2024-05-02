@@ -14,21 +14,22 @@ spring:
 #      hibernate:
 #        format_sql: true
 
-  security:
-    user:
-      name: admin
-      password: 2222
-      roles: USER, ADMIN
+#  security:
+#    user:
+#      name: admin
+#      password: 2222
+#      roles: USER, ADMIN
+
 #  servlet:
 #    multipart:
 #      max-file-size: 10MB
 #      max-request-size: 100MB
 
   profiles:
-    active: local
-
     messages:
       basename: errors
+    default: local
+
 
 #  spring:
 #    mvc:

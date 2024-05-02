@@ -2,7 +2,7 @@ package kr.co.felici.remembering.repository;
 
 
 
-import app.tozzi.repository.JPASearchRepository;
+//import app.tozzi.repository.JPASearchRepository;
 import kr.co.felici.remembering.domain.Letter;
 import kr.co.felici.remembering.domain.MemorialPost;
 import kr.co.felici.remembering.dto.MemorialPostDto;

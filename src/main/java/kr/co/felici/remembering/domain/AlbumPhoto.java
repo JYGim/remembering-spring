@@ -31,13 +31,12 @@ public class AlbumPhoto {
 
     private String photo;
 
-    @Column(length = 2, nullable = false)
+    @Column(length = 2)
     private String is_WhenPictureWasTaken_clear;
 
-    @Column(length = 4, nullable = true)
+    @Column(length = 4)
     private String estimated_year;
 
-    @Column(nullable = true)
     private LocalDate took_in;
 
     @Column(nullable = true)

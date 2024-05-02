@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
@@ -57,6 +58,7 @@ public class AlbumController {
         return new ModelAndView("addPhoto", "photo", new AlbumPhoto());
     }
 
+
 //    @PostMapping(value = "/photos/add", consumes = MULTIPART_FORM_DATA_VALUE)
 //    public String handleProfileAdd(AlbumPhoto photo, @RequestPart("file") MultipartFile file) {
 //
@@ -69,6 +71,8 @@ public class AlbumController {
         PageRequest pageable = PageRequest.of(page, 20);
         return albumPhotoRepository.findAll(pageable);
     }
+
+
 
 
 
