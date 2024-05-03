@@ -67,7 +67,8 @@ public class WebSecurityConfig {
                                 "/board/memorial-post/delete/**",
                                 "/memorial-post/deleteVideo/**",
                                 "/testb/memorial-posts/**",
-                                "/testb/test", "/mycss/**"
+                                "/testb/test", "/mycss/**",
+                                "/util/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                         .and()

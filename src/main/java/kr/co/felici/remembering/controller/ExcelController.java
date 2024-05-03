@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -23,6 +24,7 @@ import java.io.IOException;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
+@RequestMapping("/util")
 public class ExcelController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -30,12 +32,12 @@ public class ExcelController {
 
     String absolutePath = new File("").getAbsolutePath() + File.separator;
 
-    @GetMapping("album/util/upload-form")
+    @GetMapping("/album/upload-form")
     public String showUploadForm() {
-        return "/util/uploadDataToDb";
+        return "util/upload_data_to_db.html";
     }
 
-    @PostMapping("album/util/upload-data")
+    @PostMapping("/album/upload-data")
     public String uploadDataToDb(@RequestParam(value = "uploadFile") MultipartFile multipartFile,
                                  MultipartHttpServletRequest request) throws IOException, InvalidFormatException {
 

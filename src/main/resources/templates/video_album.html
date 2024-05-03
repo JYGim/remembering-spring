@@ -24,7 +24,7 @@
             <div class="row ms-0 me-0">
                 <div th:each="video : ${paging}" class="col-md-4  border border-1 border-success p-2 mb-2 border-opacity-10 border-dark ml-4 mr-4">
                     <video class="video" width="100%" controls th:poster="@{/album/video/C001_ImageCapture.jpg}">
-                        <source th:src="${'/' + video.video}" type="video/mp4">
+                        <source th:src="@{${'/' + video.video}}" type="video/mp4">
                     </video>
                     <div class="overlay"></div>
                     <div class="text text-center">

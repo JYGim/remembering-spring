@@ -7,15 +7,11 @@ import kr.co.felici.remembering.dto.*;
 import kr.co.felici.remembering.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.annotations.Parameter;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -41,11 +37,6 @@ public class BoardController {
     private final LetterService letterService;
     private final BoardImageService imageService;
     private final BoardVideoService boardVideoService;
-
-
-
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
 
     String absolutePath = new File("").getAbsolutePath() + File.separator;
 //    String uploadRootPath = absolutePath + "media";
