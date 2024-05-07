@@ -2,6 +2,7 @@ package kr.co.felici.remembering.dto;
 
 
 
+import jakarta.validation.constraints.NotBlank;
 import kr.co.felici.remembering.domain.Letter;
 import kr.co.felici.remembering.domain.User;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,8 @@ import java.util.List;
 public class AddLetterDto {
 
     private String email;
+
+    @NotBlank(message = "내용을 기재해 주세요. ")
     private String contents;
     private List<MultipartFile> photo;
     private List<MultipartFile> video;

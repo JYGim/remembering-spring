@@ -119,6 +119,7 @@ public class MemorialPostService {
             log.info("log, kw가 비어 있지 않아요");
             log.info("log, posts의 수: " + posts.getTotalElements());
             log.info("log, kw: " + kw);
+
             return posts;
         }
 
@@ -130,10 +131,19 @@ public class MemorialPostService {
         List<BoardImage> imageFileList = new ArrayList<>();
         List<BoardVideo> videoFileList = new ArrayList<>();
 
+        if(addMemorialPostDto.getPw().equals("")) {
+            log.info("log, 비번 pw가 blank입니다.   ");
+            return;
+
+        }
+
+        log.info("log, 비번 pw: " + addMemorialPostDto.getPw());
+
+
         MemorialPost memorialPost = MemorialPost.builder()
                 .writer(addMemorialPostDto.getWriter())
                 .contents(addMemorialPostDto.getContents())
-                .pw(bCryptPasswordEncoder.encode(addMemorialPostDto.getPw()))
+                .pw(bCryptPasswordEncoder.encode(addMemorialPostDto.getPw().strip()))
                 .build();
 
         log.info("memorialPost: ", memorialPost);

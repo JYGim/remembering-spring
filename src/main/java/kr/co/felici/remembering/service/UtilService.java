@@ -46,8 +46,8 @@ public class UtilService implements IUtilService {
         XSSFWorkbook workbook = new XSSFWorkbook(opcPackage);
 
         // 첫 번째 시트를 불러온다.
-//        XSSFSheet sheet = workbook.getSheet("photo");
-        XSSFSheet sheet = workbook.getSheetAt(1);
+        XSSFSheet sheet = workbook.getSheet("photo");
+//        XSSFSheet sheet = workbook.getSheetAt(1);
 
         int lastRowNum = sheet.getLastRowNum();
         log.info("log, lastRowNum: " + lastRowNum);

@@ -1,5 +1,7 @@
 package kr.co.felici.remembering.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +23,9 @@ public class UpdateMemorialPostDto {
     private String contents;
     private List<MultipartFile> photo;
     private List<MultipartFile> video;
+
+    @NotBlank
+    @Size(min = 4, max = 25)
     private String pw;
 
 //    private LocalDateTime posted_at;

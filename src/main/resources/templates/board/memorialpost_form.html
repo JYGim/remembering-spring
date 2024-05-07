@@ -64,11 +64,11 @@
                     <div class="col-lg-12">
                         <div class="row">
                             <div class="row align-items-center" style="width: 330px">
-                                <form method="post" th:action="@{/board/memorial-post/write}" enctype="multipart/form-data">
+                                <form method="post" th:action="@{/board/memorial-post/write}" th:object="${addMemorialPostDto}" enctype="multipart/form-data">
                                     <p>
-                                        <label for="id_writer">
-                                            닉네임: <input type="text" id="id_writer" name="writer" maxlength="64" required />
-                                        </label>
+                                        <label for="id_writer">닉네임:</label>
+                                        <input type="text" id="id_writer" name="writer" th:field="*{writer}" maxlength="64" />
+                                        <div th:if="${#fields.hasErrors('writer')}" th:errors="*{writer}">작성자 Error</div>
                                     </p>
 
                                     <p>
@@ -76,12 +76,12 @@
                                         <label for="id_contents">내용:</label>
                                     </p>
                                         <div data-field-id="id_contents" style="display: inline-block">
-                                            <textarea id="id_contents" name="contents" cols="40" rows="10"></textarea>
+                                            <textarea id="id_contents" name="contents" th:field="*{contents}" cols="40" rows="10"></textarea>
                                         </div>
                                     <p></p>
                                     <p>
                                         <label for="id_image">첨부 이미지:</label>
-                                        <input type="file" accept="image/*" id="id_image" name="photo" multiple>
+                                        <input type="file" accept="image/*" id="id_image" name="photo" th:field="*{photo}" multiple>
                                     </p>
                                     <p>
                                         <label for="id_video">동영상:</label>
@@ -89,7 +89,8 @@
                                     </p>
                                     <p>
                                         <label for="id_pw">비밀번호:</label>
-                                        <input type="text" id="id_pw" name="pw">
+                                        <input type="password" id="id_pw" name="pw" th:field="*{pw}">
+                                        <div th:if="${#fields.hasErrors('pw')}" th:errors="*{pw}">비밀번호 Error</div>
                                     </p>
                                     <input type="submit" value="Save">
                                 </form>

@@ -49,6 +49,8 @@ public class ExcelController {
             utilService.uploadFileToDb(multipartFile);
         } else if (excelType.equals("xls")) {
             utilService.uploadFileToDb(multipartFile);
+        } else {
+
         }
 
 

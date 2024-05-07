@@ -1,6 +1,7 @@
 package kr.co.felici.remembering.controller;
 
 
+import jakarta.validation.Valid;
 import kr.co.felici.remembering.domain.*;
 
 import kr.co.felici.remembering.dto.*;
@@ -14,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -48,32 +51,46 @@ public class BoardController {
 
     @GetMapping("/letters")
     public String getAllLetters(Model model,
-                                @RequestParam(value = "page", defaultValue = "0") int page) {
-        Page<Letter> paging = letterService.getAll(page);
-//        List<BoardImage> letterImages = new ArrayList<>();
-//
-//        List<BoardImage> allImages = imageService.findAllImages();
-//        allImages.stream().forEach(image -> {
-//            if(!(image.getLetter() == null)) {
-//                letterImages.add(image);
-//            }
-//        });
+                                @RequestParam(value = "page", defaultValue = "0") int page,
+                                @RequestParam(value = "kw", defaultValue = "") String kw) {
+
+        log.info("log, getAllPost- kw: " + kw);
+        String keyword = kw.strip();
+        if(keyword.isBlank()) {
+            log.info("felici,  keyword: isBlank");
+            keyword = "";
+        }
+        Page<Letter> letters = letterService.getAll(page, keyword);
+        if(keyword.equals("")) {
+            log.info("felici,  keyword: " + keyword);
+        } else if(keyword == null) {
+            log.info("felici,  keyword: null");
+        }
+
+        model.addAttribute("paging", letters);
+        model.addAttribute("kw", keyword);
+        log.info("felici,  letters: " + letters);
 
 
-        model.addAttribute("paging", paging);
-//        model.addAttribute("images", allImages);
-        
         return "board/letter_list";
     }
 
     @GetMapping("/letter/write")
-    public String showLetterForm() {
+    public String showLetterForm(AddLetterDto addLetterDto) {
 //        model.addAttribute("user", (User)principal);
         return "board/letter_form";
     }
 
     @PostMapping("/letter/write")
-    public String addLetter(AddLetterDto addLetterDto) throws Exception {
+    public String addLetter(@Validated AddLetterDto addLetterDto,
+                            BindingResult bindingResult, Model model) throws Exception {
+
+        if(bindingResult.hasErrors()) {
+            log.error("bindingResult 에러가 있네");
+            /* 작성 실패시 입력 데이터 값을 유지 */
+            model.addAttribute("addLetterDto", addLetterDto);
+            return "board/letter_form";
+        }
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UserDetails userDetails = (UserDetails) principal;
@@ -82,10 +99,6 @@ public class BoardController {
         log.info("Controller - username: " , username);
 
         addLetterDto.setEmail(username);
-
-
-
-
 
         letterService.addLetter(addLetterDto);
 
@@ -149,6 +162,23 @@ public class BoardController {
         return "redirect:/board/letters";
     }
 
+//    @PostMapping("/letter/delete/")
+//    public String deleteLetter(@RequestParam Map<String, String> params,
+//                               RedirectAttributes redirectAttributes) {
+//
+//        String resultStr = letterService.deleteLetter(params);
+//
+//        if(resultStr == params.get("id")) {
+//            log.info("resultStr: " + resultStr);
+//            redirectAttributes.addFlashAttribute("success", resultStr);
+//        } else {
+//            log.info("resultStr: " + resultStr);
+//            redirectAttributes.addFlashAttribute("deleteIsSuccessful", resultStr);
+//        }
+//
+//        return "redirect:/board/letters";
+//    }
+
 //    @GetMapping("/excercise")
 //    public String ex(Model model,
 //                             @RequestParam(value = "page", defaultValue = "0") int page) {
@@ -165,17 +195,21 @@ public class BoardController {
                              @RequestParam(value = "kw", defaultValue = "") String kw) {
 
         log.info("log, getAllPost- kw: " + kw);
-
-        Page<MemorialPost> posts = memorialPostService.getAll(page, kw);
-        if(kw.equals("")) {
-            log.info("log,  kw: " + kw);
-        } else if(kw == null) {
-            log.info("log,  kw: null");
+        String keyword = kw.strip();
+        if(keyword.isBlank()) {
+            log.info("felici,  keyword: isBlank");
+            keyword = "";
+        }
+        Page<MemorialPost> posts = memorialPostService.getAll(page, keyword);
+        if(keyword.equals("")) {
+            log.info("felici,  keyword: " + keyword);
+        } else if(keyword == null) {
+            log.info("felici,  keyword: null");
         }
 
         model.addAttribute("posts", posts);
-        model.addAttribute("kw", kw);
-        log.info("log,  posts: " + posts);
+        model.addAttribute("kw", keyword);
+        log.info("felici,  posts: " + posts);
         return "board/memorialpost_list";
     }
 
@@ -185,11 +219,21 @@ public class BoardController {
     }
 
     @PostMapping("/memorial-post/write")
-    public String addPost(AddMemorialPostDto addMemorialPostDto)
+    public String addPost(@Validated AddMemorialPostDto addMemorialPostDto,
+                          BindingResult bindingResult, Model model)
             throws Exception {
+
+        if(bindingResult.hasErrors()) {
+            log.error("bindingResult 에러가 있네");
+            /* 회원가입 실패시 입력 데이터 값을 유지 */
+            model.addAttribute("addMemorialPostDto", addMemorialPostDto);
+            return "board/memorialpost_form";
+        }
+
         memorialPostService.addPost(addMemorialPostDto);
         return "redirect:/board/memorial-posts";
     }
+
 
     @GetMapping("/memorial-post/update/{memorialPostId}")
     public String updateMemorialPostForm(@PathVariable(name = "memorialPostId") Long id,
@@ -200,21 +244,52 @@ public class BoardController {
 
         MemorialPost thePost = memorialPostService.findById(id);
         model.addAttribute("post", thePost);
+        model.addAttribute("id", thePost.getId());
         return "board/memorialpost_update_form";
 
     }
 
     @PostMapping("/memorial-post/update")
-    public String updateMemorialPost(UpdateMemorialPostDto updateMemorialPostDto,
-                                        RedirectAttributes redirectAttributes) throws IOException {
+    public String updateMemorialPost(@Validated UpdateMemorialPostDto updateMemorialPostDto,
+                                            BindingResult bindingResult,
+                                            Model model,
+                                            RedirectAttributes redirectAttributes) throws IOException {
+
+
+        if(bindingResult.hasErrors()) {
+            MemorialPost post = memorialPostService.findById(updateMemorialPostDto.getId());
+            model.addAttribute("updateMemorialPostDto", updateMemorialPostDto);
+            model.addAttribute("post", post);
+            log.info("felici, post: " + post);
+            model.addAttribute("id", updateMemorialPostDto.getId());
+
+            log.info("felici, id: " + updateMemorialPostDto.getId());
+            return "board/memorialpost_update_form";
+        }
+
         MemorialPost thePost = memorialPostService.updateMemorialPost(updateMemorialPostDto);
 
         Map<String, Boolean> succeed = memorialPostService.succeed();
         Boolean updateIsSuccessful = succeed.get("updateIsSuccessful");
         redirectAttributes.addFlashAttribute("updateIsSuccessful", updateIsSuccessful);
         log.info("updateIsSuccessful: " + updateIsSuccessful);
+        if(updateIsSuccessful == false) {
+
+            MemorialPost post = memorialPostService.findById(updateMemorialPostDto.getId());
+            model.addAttribute("updateMemorialPostDto", updateMemorialPostDto);
+            model.addAttribute("post", post);
+            log.info("felici, post: " + post);
+            model.addAttribute("id", updateMemorialPostDto.getId());
+
+            log.info("felici, id: " + updateMemorialPostDto.getId());
+
+            return "board/memorialpost_update_form";
+        }
         return "redirect:/board/memorial-posts";
     }
+
+//    @PostMapping("/memorial-post/authcheck/")
+//    public String authCheck
 
     @GetMapping("/memorial-post/deleteImg/{image_id}")
     public String deletePostImage(@PathVariable(name = "image_id") Long image_id,
@@ -296,7 +371,7 @@ public class BoardController {
             redirectAttributes.addFlashAttribute("success", resultStr);
         } else {
             log.info("resultStr: " + resultStr);
-            redirectAttributes.addFlashAttribute("error", resultStr);
+            redirectAttributes.addFlashAttribute("deleteIsSuccessful", resultStr);
         }
 
         return "redirect:/board/memorial-posts";

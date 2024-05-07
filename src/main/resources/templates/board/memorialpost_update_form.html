@@ -81,11 +81,13 @@
                     <div class="col-lg-12">
                         <div class="row">
                             <div class="row align-items-center" style="width: 330px">
-                                <form method="post" th:action="@{/board/memorial-post/update}" enctype="multipart/form-data">
-                                    <input type="hidden" id="post_id" name="id" th:value="${post.id}">
+                                <form method="post" th:action="@{/board/memorial-post/update}" th:object="${updateMemorialPostDto}" enctype="multipart/form-data">
 
-                                        <label for="id_writer"></label>
-                                            닉네임: <input type="text" id="id_writer" name="writer" maxlength="64" readonly
+<!--                                    <input type="hidden" name="id" th:value="${post.id}">-->
+                                    <input type="hidden" name="id" th:value="${id}">
+
+                                        <label for="id_writer">닉네임: </label>
+                                        <input type="text" id="id_writer" name="writer" maxlength="64" readonly
                                         th:value="${post.writer}"/>
 
                                         <label for="id_contents">내용:</label>
@@ -128,10 +130,42 @@
                                     </p>
                                     <p>
                                         <label for="id_pw">비밀번호:</label>
-                                        <input type="text" id="id_pw" name="pw">
+                                        <input type="text" id="id_pw" name="pw" th:field="*{pw}">
+                                        <div th:if="${#fields.hasErrors('pw')}" th:errors="*{pw}">비밀번호 Error</div>
                                     </p>
                                     <input type="submit" value="Save">
                                 </form>
+
+                                <div class="modal fade" id="modifyModal" tabindex="-1"
+                                     aria-labelledby="modifyModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <!-- header -->
+                                            <div class="modal-header">
+                                                <!-- 닫기(x) 버튼 -->
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                                                <!-- header title -->
+                                                <h4 class="modal-title">닫기</h4>
+                                            </div>
+                                            <!-- body -->
+                                            <div class="modal-body">
+                                                <div id="modify-div" title="Dialog Form">
+                                                    <!--                                            <form action="/board/memorial-post/delete/" method="post">-->
+                                                    <form action="/board/memorial-post/authcheck/" method="post">
+                                                        <label for="pw">비밀번호:</label>
+                                                        <input id="pw" name="pwd" type="password" class="text ui-widget-content ui-corner-all">
+                                                        <input type="submit" value="Submit">
+                                                    </form>
+                                                </div>
+                                            </div>
+                                            <!-- Footer -->
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-bs-dismiss="modal">닫기</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
 
                                 <div class="modal fade" id="deleteConfirmationModal" tabindex="-1"
                                      aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">

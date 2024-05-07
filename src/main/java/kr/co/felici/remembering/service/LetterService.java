@@ -2,11 +2,11 @@ package kr.co.felici.remembering.service;
 
 
 import jakarta.persistence.EntityManager;
-import kr.co.felici.remembering.domain.BoardImage;
-import kr.co.felici.remembering.domain.Letter;
-import kr.co.felici.remembering.domain.BoardVideo;
-import kr.co.felici.remembering.domain.User;
+import kr.co.felici.remembering.domain.*;
+import kr.co.felici.remembering.domain.specification.LetterSpecification;
+import kr.co.felici.remembering.domain.specification.MemorialPostSpecification;
 import kr.co.felici.remembering.dto.AddLetterDto;
+import kr.co.felici.remembering.dto.LetterDto;
 import kr.co.felici.remembering.dto.UpdateLetterDto;
 import kr.co.felici.remembering.repository.BoardVideoRepository;
 import kr.co.felici.remembering.repository.BoardImageRepository;
@@ -17,7 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,12 +66,50 @@ public class LetterService {
         return letterRepository.findById(letterId)
                 .orElseThrow(() -> new IllegalArgumentException("not found : " + letterId));
     }
-    public Page<Letter> getAll(int page) {
+
+    public Page<Letter> getAll(int page, String kw) {
         List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.asc("modifiedAt"));
+        sorts.add(Sort.Order.desc("modifiedAt"));
         PageRequest pageable = PageRequest.of(page, 2, Sort.by(sorts));
-        return letterRepository.findAll(pageable);
+
+        if (kw != null && kw.equals("")) {
+            Page<Letter> letters = letterRepository.findAll(pageable);
+            log.info("log, letters: " + letters);
+            log.info("log, kw: " + kw);
+            return letters;
+
+        } else if (kw != null && !kw.isEmpty()) {
+            Specification<Letter> spec = this.searchLetter(kw, pageable);
+            Page<Letter> letters = letterRepository.findAll(spec, pageable);
+            log.info("log, spec: " + spec);
+            log.info("log, kw가 비어 있지 않아요");
+            log.info("log, letters의 수: " + letters.getTotalElements());
+            log.info("log, kw: " + kw);
+
+            return letters;
+        }
+
+        return null;
     }
+
+    // user 검색 기능 추가해야 함.
+    private Specification<Letter> searchLetter(String kw, Pageable pageable) {
+
+        Specification<Letter> spec = (root, query, criteriaBuilder) -> null;
+
+//        Page<Letter> allByUserEmail = letterRepository.findAllByUser(kw, pageable);
+
+        if (kw != null && !kw.isEmpty()) {
+            spec = spec.and(LetterSpecification.likeContents(kw));
+//            spec = spec.or(LetterSpecification.likeUserEmail(kw));
+
+            log.info("log, spec: " + spec);
+
+        }
+
+        return spec;
+    }
+
     @Transactional
     public void addLetter(AddLetterDto addLetterDto) throws Exception {
         log.info(absolutePath);
@@ -84,7 +124,6 @@ public class LetterService {
                 .user(byEmail.get())
                 .contents(addLetterDto.getContents())
                 .build();
-
 
 
         addMediaFile(letter, addLetterDto, mPhotoFile, imageFileList, videoFileList);
@@ -103,8 +142,6 @@ public class LetterService {
                 boardVideoRepository.save(video);
             }
         }
-
-
 
 
         letterRepository.save(letter);
@@ -128,8 +165,8 @@ public class LetterService {
     }
 
     private void addMediaFile(Letter letter, AddLetterDto addLetterDto,
-                               String typeOfFile, List<BoardImage> imageFileList,
-                               List<BoardVideo> videoFileList) throws IOException {
+                              String typeOfFile, List<BoardImage> imageFileList,
+                              List<BoardVideo> videoFileList) throws IOException {
         List<MultipartFile> multipartFiles = null;
 
         switch (typeOfFile) {
@@ -241,11 +278,13 @@ public class LetterService {
         }
     }
 
-    public void deleteLetter(Long id) {
+    public Long deleteLetter(Long id) {
 
-        Letter theLetter = findById(id);
+        Letter theLetter = this.findById(Long.valueOf(id));
+
         List<BoardImage> images = theLetter.getImages();
         List<BoardVideo> videos = theLetter.getVideos();
+
         if (!images.isEmpty()) {
             for (BoardImage image : images) {
                 try {
@@ -290,9 +329,12 @@ public class LetterService {
 
             }
         }
+        letterRepository.deleteById(Long.valueOf(id));
+
+        log.info("삭제 성공!!!" + id);
+        return id;
 
 
-        letterRepository.deleteById(id);
     }
 
 //    @Transactional

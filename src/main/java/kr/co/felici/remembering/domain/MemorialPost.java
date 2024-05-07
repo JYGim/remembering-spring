@@ -1,6 +1,8 @@
 package kr.co.felici.remembering.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
@@ -32,7 +34,9 @@ public class MemorialPost extends BaseTimeEntity {
     @OneToMany(mappedBy = "memorialPost", cascade = CascadeType.REMOVE)
     private List<BoardVideo> videos = new ArrayList<>();
 
-    @Column(length = 126, nullable = false)
+    @Column(length = 512, nullable = false)
+    @NotEmpty(message = "비밀번호를 입력해 주세요. ")
+    @NotBlank
     private String pw;
 
     @Builder

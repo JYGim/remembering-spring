@@ -68,13 +68,15 @@
                 <div class="col-lg-12">
                     <div class="row">
                         <div class="row align-items-center" style="width: 330px">
-                            <form method="post" th:action="@{/board/letter/write}" enctype="multipart/form-data">
+                            <form method="post" th:action="@{/board/letter/write}"
+                                  th:object="${addLetterDto}" enctype="multipart/form-data">
 <!--                                <input type="hidden" name="user" value="user" />-->
                                 <p>
                                     <label for="id_contents">내용:</label>
                                 </p>
                                 <div data-field-id="id_contents" style="display: inline-block">
                                     <textarea id="id_contents" name="contents" cols="40" rows="10"></textarea>
+                                    <div th:if="${#fields.hasErrors('contents')}" th:errors="*{contents}">내용 Error</div>
                                 </div>
                                 <p></p>
                                 <p>

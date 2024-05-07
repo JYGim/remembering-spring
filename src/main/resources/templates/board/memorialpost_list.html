@@ -81,7 +81,9 @@
         <div class="row">
             <div class="col-lg-8">
                 <div class="row" th:if="${posts.totalPages} == 0">
-                    <h5>아직 게시물이 없어요!!!</h5>
+
+                    <h5 th:unless="${#strings.equals(kw, '')}" >해당하는 게시물이 없어요!!!</h5>
+                    <h5 th:if="${#strings.equals(kw, '')}" >아직 게시물이 없어요!!!</h5>
                 </div>
 
                 <th:block th:unless="${posts.totalPages} == 0">
@@ -308,53 +310,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
     <th:block th:if="(${updateIsSuccessful} == false)">
-
-
         <script>
             $(function() {
                 $('#modifyErrorModal').modal('toggle');
             })
-
         </script>
     </th:block>
 
-    <th:block th:if="(${deleteIsSuccessful} == false)">
-
-
+    <th:block th:if="(${deleteIsSuccessful} == -1)">
         <script>
             $(function() {
                 $('#delErrorModal').modal('toggle');
             })
-
-
         </script>
     </th:block>
 
-
-    <script>
-
-        function deleteItem(id){
-            console.log(id)
-            const url = "/board/board/memorial-post/delete/"+ id
-            $.ajax({
-                type:'delete',
-                url:url,
-                contentType:'application/json; charset=utf-8'
-            }).done(function() {
-                alert('할 일이 삭제되었습니다.');
-                window.location.href = '/';
-            }).fail(function (error){
-                alert(JSON.stringify(error));
-            });
-        }
-
-    </script>
-
-
-
-
 </div>
-
 </body>
 
 </html>
