@@ -1,0 +1,31 @@
+    <aside role="complementary" class="js-fullheight text-center justify-content-center"
+           xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <h1><a th:href="@{/}">Remembering</a></h1>
+    <nav role="navigation">
+        <ul>
+            <li th:classappend="${currentPath == '/'} ? 'active'"><a th:href="@{/}">Home</a></li>
+            <li th:classappend="${#strings.startsWith(currentPath, '/album/photos')} ? 'active'"><a th:href="@{/album/photos}">Photography</a></li>
+            <li th:classappend="${#strings.startsWith(currentPath, '/album/video')} ? 'active'"><a th:href="@{/album/video}">동영상</a></li>
+            <li th:classappend="${#strings.startsWith(currentPath, '/board/memorial-post')} ? 'active'"><a th:href="@{/board/memorial-posts}">게시판</a></li>
+            <li th:classappend="${#strings.startsWith(currentPath, '/board/letter')} ? 'active'"><a th:href="@{/board/letters}">가족 공간</a></li>
+            <li sec:authorize="!isAuthenticated()">
+                <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
+                   th:href="@{/login}">Log In</a>
+            </li>
+            <li sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post" style="display:inline; margin:0;">
+                    <button type="submit"
+                            class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
+                            style="background:none; border:none; cursor:pointer;">Log Out</button>
+                </form>
+            </li>
+            <li sec:authorize="!isAuthenticated()">
+                <a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base"
+                   th:href="@{/signup}">Sign up</a>
+            </li>
+        </ul>
+    </nav>
+    <p style="font-size: 12px; color: #999; margin-top: 2rem;">
+        Template by <a href="https://colorlib.com" target="_blank" rel="noopener">Colorlib</a>
+    </p>
+    </aside>

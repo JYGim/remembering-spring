@@ -1,0 +1,22 @@
+spring:
+  profiles:
+    default: local
+  jpa:
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+  messages:
+    basename: errors
+  config:
+    import: optional:file:.env[.properties]
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 300MB
+
+app:
+  upload-dir: ${UPLOAD_DIR:media}
+  site:
+    memorial-name: 홍길동
+    hero-image: /images/hero-default.svg
+    profile-image: /images/profile-default.svg

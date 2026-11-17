@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="theme-color" content="#478ac9">
+    <meta property="og:title" content="photo_list">
+    <meta property="og:type" content="website">
+    <meta data-intl-tel-input-cdn-path="intlTelInput/">
+
+    <title>
+        게시판
+    </title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+          crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,700" rel="stylesheet">
+
+
+    <link rel="stylesheet" th:href="@{/css/animate.css}">
+
+    <link rel="stylesheet" th:href="@{/css/owl.carousel.min.css}">
+    <link rel="stylesheet" th:href="@{/css/owl.theme.default.min.css}">
+    <link rel="stylesheet" th:href="@{/css/magnific-popup.css}">
+
+    <link rel="stylesheet" th:href="@{/css/aos.css}">
+
+    <link rel="stylesheet" th:href="@{/css/ionicons.min.css}">
+
+    <link rel="stylesheet" th:href="@{/css/bootstrap-datepicker.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.14.0/jquery.timepicker.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+    <link rel="stylesheet" th:href="@{/css/flaticon.css}">
+
+    <link rel="stylesheet" th:href="@{/mycss/mystyle.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+</head>
+<style>
+    .modal{
+        position:absolute;
+        width:700px;
+        height:300px;
+        /*background:black;*/
+        top:50%;
+        left:30%;
+        display:none;
+    }
+</style>
+<body>
+
+<div th:replace="~{fragments/aside :: aside}"></div>
+
+<div id="home-main">
+    <div class="hero-wrap js-fullheight" th:style="|background-image:url(${site.heroImage});|"
+         data-stellar-background-ratio="0.5">
+        <div class="overlay"></div>
+        <div class="js-fullheight d-flex justify-content-center align-items-center">
+            <div class="col-md-8 text text-center">
+                <div class="desc">
+                    <h1 class="mb-4">게시판</h1>
+                    <h3 class="mb-4"><span th:text="${site.memorialName}">홍길동</span>를 추억하며...</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="ftco-section">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="row" th:if="${posts.totalPages} == 0">
+
+                    <h5 th:unless="${#strings.equals(kw, '')}" >해당하는 게시물이 없어요!!!</h5>
+                    <h5 th:if="${#strings.equals(kw, '')}" >아직 게시물이 없어요!!!</h5>
+                </div>
+
+                <th:block th:unless="${posts.totalPages} == 0">
+                    <th:block th:each="post : ${posts}">
+                        <th:block th:unless="${post.images.isEmpty}" th:each="image : ${post.images}">
+                            <img th:src="@{'/memorialPosts/images/thumbnail/' + ${image.path}}" alt="" class="img-fluid post-media">
+                        </th:block>
+
+                        <th:block th:each="video : ${post.videos}">
+                            <video th:src="@{'/memorialPosts/videos/' + ${video.path}}" class="img-fluid post-media" controls preload="metadata"></video>
+                        </th:block>
+                        <div class="text pt-2 mt-3">
+                            <span class="category mb-1 d-block"><a href="#">    </a></span>
+                            <h5 th:text="${post.contents}" class="mb-4" style="color: #696969;"></h5>
+                            <div class="author mb-4 d-flex align-items-center">
+                                <div class="ml-3 info">
+                                    <span>Written by</span>
+                                    <h3 th:text="${post.writer}"></h3>
+                                    <h5>
+                                        <span th:if="${post.modifiedAt != post.postedAt}" th:text="${#temporals.format(post.modifiedAt, 'yyyy-MM-dd')}"></span>
+                                        <span th:unless="${post.modifiedAt != post.postedAt}" th:text="${#temporals.format(post.postedAt, 'yyyy-MM-dd')}"></span>
+                                    </h5>
+                                </div>
+                            </div>
+                            <div class="meta-wrap d-md-flex align-items-center">
+                                <div class="half order-md-last text-md-right ml-2">
+                                    <p class="meta">
+                                    </p>
+                                </div>
+                                <div>
+                                    <p><a class="btn btn-primary p-3 px-xl-4 py-xl-3"
+                                          data-bs-toggle="modal"
+                                          th:attr="data-bs-target='#deleteConfirmationModal' + ${post.id}">삭제하기</a></p>
+                                </div>
+
+                                <div class="ml-2">
+                                    <p><a th:href="@{/board/memorial-post/update/{id}(id=${post.id})}"
+                                          class="btn btn-primary p-3 px-xl-4 py-xl-3">
+                                        수정하기</a></p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="modal fade" th:id="'deleteConfirmationModal' + ${post.id}" tabindex="-1"
+                             aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                                        <h4 class="modal-title">삭제</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id="deletediv" title="Dialog Form">
+                                            <form th:action="@{/board/memorial-post/delete/}" method="post">
+                                                <label th:for="'pwd' + ${post.id}">비밀번호:</label>
+                                                <input th:id="'pwd' + ${post.id}" name="pwd" type="password" class="text ui-widget-content ui-corner-all">
+                                                <input name="id" type="hidden" th:value="${post.id}">
+                                                <input type="submit" value="Submit">
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-bs-dismiss="modal">닫기</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="delErrorModal" tabindex="-1" role="dialog"
+                             aria-labelledby="errorModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">삭제 안됨</h5>
+                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>비밀번호가 맞지 않아 삭제되지 않았습니다. </p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="modifyErrorModal" tabindex="-1" role="dialog"
+                             aria-labelledby="errorModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">삭제 안됨</h5>
+                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>비밀번호가 맞지 않아 수정되지 않았습니다. </p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </th:block>
+                </th:block>
+
+
+
+
+
+
+                <div class="u-clearfix u-sheet u-valign-middle u-sheet-1">
+                    <p class="u-small-text u-text u-text-default u-text-variant u-text-1">
+                    <div class="u-clearfix u-sheet u-sheet-1">
+                        <div class="row">
+                            <div class="m-auto">
+                                <div class="pagination block-27" th:if="${!posts.isEmpty()}">
+                                    <ul>
+                                        <th:block th:if="${posts.hasPrevious}">
+                                            <li class="list-inline-item">
+                                                <a th:href="@{|?page=${posts.getPageable().first().getPageNumber()}|}">&laquo</a>
+                                            </li>
+                                            <li class="list-inline-item">
+                                                <a th:href="@{|?page=${posts.number-1}|}" class="prev-posts">&lt</a>
+                                            </li>
+                                        </th:block>
+
+                                        <li th:each="page: ${#numbers.sequence(0, posts.totalPages-1)}"
+                                            th:if="${page >= posts.number-5 and page <= posts.number+5}"
+                                            th:classappend="${page == posts.number} ? 'active'"
+                                            class="list-inline-item">
+                                            <a th:text="${page+1}" th:href="@{|?page=${page}|}"></a>
+                                        </li>
+
+                                        <th:block th:if="${posts.hasNext()}">
+                                            <li class="list-inline-item">
+                                                <a th:href="@{|?page=${posts.number+1}|}" class="prev-posts">></a>
+                                            </li>
+                                            <li class="list-inline-item">
+                                                <a th:href="@{|?page=${posts.getTotalPages()-1}|}" class="prev-posts">&raquo</a>
+                                            </li>
+                                        </th:block>
+
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+            </div><!-- END-->
+
+            <div class="col-lg-4 sidebar ftco-animate">
+
+                <div class="sidebar-box">
+                    <form th:action="@{/board/memorial-posts}" method="GET" class="search-form">
+                        <div class="form-group">
+                            <span class="icon icon-search"></span>
+                            <input type="text" class="form-control" placeholder="검색 키워드를 입력 후 엔터(작성자와 내용 검색)"  name="kw" />
+                        </div>
+                    </form>
+                </div>
+
+                <div class="sidebar-box">
+                    <div class="meta-wrap d-md-flex align-items-center">
+                        <div>
+                            <p><a th:href="@{/board/memorial-post/write}" class="btn btn-primary p-3 px-xl-4 py-xl-3">작성</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- 우측 사이드바 END COL -->
+        </div>
+    </section>
+
+    <div id="ftco-loader" class="show fullscreen">
+        <svg class="circular" width="48px" height="48px">
+            <circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/>
+            <circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10"
+                    stroke="#F96D00"/>
+        </svg>
+    </div>
+
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/jquery-migrate-3.0.1.min.js}"></script>
+    <script th:src="@{/js/popper.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/jquery.easing.1.3.js}"></script>
+    <script th:src="@{/js/jquery.waypoints.min.js}"></script>
+    <script th:src="@{/js/jquery.stellar.min.js}"></script>
+    <script th:src="@{/js/owl.carousel.min.js}"></script>
+    <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+    <script th:src="@{/js/aos.js}"></script>
+    <script th:src="@{/js/jquery.animateNumber.min.js}"></script>
+    <script th:src="@{/js/bootstrap-datepicker.js}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.14.0/jquery.timepicker.min.js"></script>
+    <script th:src="@{/js/scrollax.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <th:block th:if="(${updateIsSuccessful} == false)">
+        <script>
+            $(function() {
+                $('#modifyErrorModal').modal('toggle');
+            })
+        </script>
+    </th:block>
+
+    <th:block th:if="(${deleteIsSuccessful} == -1)">
+        <script>
+            $(function() {
+                $('#delErrorModal').modal('toggle');
+            })
+        </script>
+    </th:block>
+
+</div>
+</body>
+
+</html>

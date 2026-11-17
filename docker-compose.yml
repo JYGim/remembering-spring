@@ -1,0 +1,46 @@
+services:
+  # 1. MySQL 8.0 컨테이너
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # 2. 스프링 부트 웹 애플리케이션 컨테이너
+  web:
+    build: .
+    container_name: spring-web
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # 도커 네트워크 내부(db:3306)를 바라보도록 설정합니다.
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${DB_NAME}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      UPLOAD_DIR: /app/media          # ← 추가
+      APP_SITE_MEMORIAL_NAME: ${MEMORIAL_NAME:-홍길동}
+      APP_SITE_HERO_IMAGE: ${HERO_IMAGE:-/images/hero-default.svg}
+      APP_SITE_PROFILE_IMAGE: ${PROFILE_IMAGE:-/images/profile-default.svg}
+    volumes: # ← 추가
+      - media_data:/app/media         # ← 추가
+    restart: on-failure
+
+volumes:
+  mysql_data:
+  media_data:                         # ← 추가

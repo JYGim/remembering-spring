@@ -1,0 +1,8 @@
+<div th:fragment="formErrorsFragment" class="alert alert-danger"
+        role="alert" th:if="${#fields.hasAnyErrors()}">
+    <div th:if="${#fields.hasErrors('email')}" th:text="${#fields.errors('email')}"></div>
+    <div th:if="${#fields.hasErrors('password')}" th:text="${#fields.errors('password')}"></div>
+    <div th:if="${#fields.hasErrors('password2')}" th:text="${#fields.errors('password2')}"></div>
+    <div th:if="${#fields.hasErrors('nickname')}" th:text="${#fields.errors('nickname')}"></div>
+    <div th:each="err : ${#fields.allErrors()}" th:text="${err}">
+</div>
